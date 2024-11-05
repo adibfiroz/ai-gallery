@@ -52,7 +52,7 @@ const CollectionCard = ({ data, currentUser, collections }: CollectionCardProps)
             setIsLoading2(false)
         };
         fetchData();
-    }, []);
+    }, [data.id]);
 
 
     const firstImg = getImages[0]?.img

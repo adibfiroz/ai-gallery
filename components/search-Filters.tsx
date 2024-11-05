@@ -59,7 +59,7 @@ const SearchFilters = ({ count }: SearchFiltersProps) => {
         <div>
             <h2 className="text-3xl py-4 md:text-4xl text-left w-full text-wrap font-semibold capitalize text-[#384261]" style={{ wordBreak: "break-word" }}>
                 {count.length === 0 ?
-                    <div>no results found for <span className=" text-gray-400">"{decodedString}"</span></div>
+                    <div>no results found for <span className=" text-gray-400">{`"`}{decodedString}{`"`}</span></div>
                     : <div>{decodedString}</div>
                 }
             </h2>

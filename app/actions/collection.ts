@@ -67,8 +67,8 @@ export const createCollection = async (params: ICreateCollectionParams) => {
     });
 
     return { message: "Folder created" };
-  } catch (error: any) {
-    throw new Error("Something went wrong!");
+  } catch (error: unknown) {
+    throw new Error();
   }
 };
 
@@ -124,8 +124,8 @@ export const addImagetoCollection = async (
     });
 
     return updatedCollection;
-  } catch (error) {
-    throw new Error("Something went wrong!");
+  } catch (error: unknown) {
+    throw new Error();
   }
 };
 
@@ -154,8 +154,8 @@ export const removeImagetoCollection = async (
     });
 
     return updatedCollection;
-  } catch (error) {
-    throw new Error("Something went wrong!");
+  } catch (error: unknown) {
+    throw new Error();
   }
 };
 
@@ -177,8 +177,8 @@ export const deleteCollection = async (params: IImageCollectionIdParams) => {
     });
 
     return deleteCollection;
-  } catch (error) {
-    throw new Error("Something went wrong!");
+  } catch (error: unknown) {
+    throw new Error();
   }
 };
 
@@ -203,7 +203,7 @@ export const updateCollection = async (params: IImageCollectionIdParams) => {
     });
 
     return updatedCollection;
-  } catch (error) {
-    throw new Error("Something went wrong!");
+  } catch (error: unknown) {
+    throw new Error();
   }
 };
