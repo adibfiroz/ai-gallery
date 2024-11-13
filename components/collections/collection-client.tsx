@@ -72,7 +72,7 @@ const CollectionClient = ({
                 freeCount={freeCount}
                 isSubscribed={isSubscribed}
                 currentUser={currentUser}
-                totalImages={totalCount}
+                totalImages={data}
                 handleLoadMore={handleLoadMore}
                 data={images}
             />

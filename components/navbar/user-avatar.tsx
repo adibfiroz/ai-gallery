@@ -50,7 +50,7 @@ export const UserAvatar = ({
           </DropdownMenuItem>
         </Link>
 
-        <Link href={`/profile/lufffioni/settings`}>
+        <Link href={`/profile/${formattedName}/settings`}>
           <DropdownMenuItem className=" flex gap-10 cursor-pointer px-3 py-2.5 justify-between">
             Settings
             <Settings size={18} />

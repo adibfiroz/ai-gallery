@@ -6,6 +6,7 @@ import Footer from "@/components/navbar/footer";
 import { ModalProvider } from "@/components/modal-provider";
 import getCurrentUser from "./actions/getCurrentUser";
 import { ToasterProvider } from "@/components/toaster-provider";
+import { dailyLimit } from "./actions/user";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,6 +21,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const currentUser = await getCurrentUser()
+
+  await dailyLimit()
+
   return (
     <html lang="en">
       <body className={inter.className}>

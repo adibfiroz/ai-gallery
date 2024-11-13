@@ -13,14 +13,13 @@ interface ImageCleintProps {
     orientation?: string
     sort?: string
     initialTake: number
-    totalCount: Image[]
     currentUser?: SafeUser | null
     isSubscribed: boolean
     freeCount: number
 }
 
 
-const ImageCleint = ({ data, orientation, collections, isSubscribed, freeCount, currentUser, sort, decodedString, totalCount, initialTake }: ImageCleintProps) => {
+const ImageCleint = ({ data, orientation, collections, isSubscribed, freeCount, currentUser, sort, decodedString, initialTake }: ImageCleintProps) => {
     const [images, setImages] = useState(data);
     const [take, setTake] = useState(initialTake);
 
@@ -58,18 +57,10 @@ const ImageCleint = ({ data, orientation, collections, isSubscribed, freeCount, 
                 freeCount={freeCount}
                 isSubscribed={isSubscribed}
                 currentUser={currentUser}
-                totalImages={totalCount}
+                totalImages={images}
                 handleLoadMore={handleLoadMore}
                 data={images}
             />
-
-            {/* {images.length !== totalCount &&
-                <div className='text-center mt-5'>
-                    <button onClick={handleLoadMore} disabled={loading} className="rounded-md p-4 cursor-pointer hover:bg-teal-500/10 hover:text-teal-800 border border-teal-500/80">
-                        {loading ? 'Loading...' : 'Load More'}
-                    </button>
-                </div>
-            } */}
         </div>
     )
 }

@@ -30,7 +30,7 @@ const ProfilePage = async () => {
                 createdAt: 'desc'
             }
         }),
-        prismadb.image.findMany({
+        prismadb.image.count({
             where: {
                 id: {
                     in: [...(currentUser?.favoriteIds || [])]
@@ -47,7 +47,6 @@ const ProfilePage = async () => {
             <FavouriteClient
                 data={data}
                 initialTake={take}
-                totalCount={count}
                 freeCount={freeCount}
                 collections={collections}
                 currentUser={currentUser}

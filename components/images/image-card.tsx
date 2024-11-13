@@ -58,8 +58,12 @@ const ImageCard = ({ data, totalImages, isSubscribed, collections, freeCount, cu
         }
         try {
             if (!isSubscribed) {
+                if (item.Pro) {
+                    toast.error("subscribe for unlimited downloads")
+                    return
+                }
                 if (freeCount >= MAX_DOWNLOAD_LIMIT) {
-                    toast.error("Subscribe for unlimited downloads")
+                    toast.error("you have reached your \n daily download limit")
                     return
                 }
                 await increaseFreeDownloadLimit()
@@ -119,7 +123,9 @@ const ImageCard = ({ data, totalImages, isSubscribed, collections, freeCount, cu
                             }
                             <div
                                 className="black-gradient invisible md:visible opacity-0 md:group-hover/item:opacity-100 transition-all duration-300 rounded-xl absolute left-0 right-0 z-10 bottom-0 h-full gap-2 flex flex-col justify-between p-4">
-                                <div className=' text-right'></div>
+                                <div className=' text-left'>
+                                    {item.Pro && <img src="/crown.png" width={30} height={30} className='' alt="proImage" />}
+                                </div>
                                 <div className='flex justify-between'>
                                     <Button onClick={(e) => handleDownload(e, item)} className='bg-gradient-to-r from-teal-400 via-teal-500 h-10 gap-x-2 rounded-full to-teal-600'>
                                         <Download size={20} />
