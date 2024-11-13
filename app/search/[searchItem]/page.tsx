@@ -58,7 +58,7 @@ const SearchPage = async ({
             take: take,
             skip: skip
         }),
-        prismadb.image.findMany({ where: query, orderBy: orderByClause }),
+        prismadb.image.count({ where: query, orderBy: orderByClause }),
     ]);
 
     const tag = await prismadb.tags.findUnique({
@@ -74,7 +74,6 @@ const SearchPage = async ({
             <ImageCleint
                 data={data}
                 sort={sort}
-                totalCount={count}
                 initialTake={take}
                 freeCount={freeCount}
                 collections={collections}

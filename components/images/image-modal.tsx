@@ -27,6 +27,7 @@ import { increaseFreeDownloadLimit } from '@/lib/api-limit';
 import { useRouter } from 'next/navigation';
 import CollectionButton from '../collection-button';
 import Link from 'next/link';
+import { MAX_DOWNLOAD_LIMIT } from '@/constants';
 
 
 interface ImageModalProps {
@@ -68,8 +69,12 @@ const ImageModal = ({
 
         try {
             if (!isSubscribed) {
-                if (freeCount >= 5) {
-                    toast.error("Subscribe for unlimited downloads")
+                if (currentImage?.Pro) {
+                    toast.error("subscribe for unlimited downloads")
+                    return
+                }
+                if (freeCount >= MAX_DOWNLOAD_LIMIT) {
+                    toast.error("you have reached your \n daily download limit")
                     return
                 }
                 await increaseFreeDownloadLimit()
@@ -118,7 +123,8 @@ const ImageModal = ({
             <DialogContent className='p-0 md:w-[90%] h-full md:h-auto border-0  outline-none md:rounded-lg  max-w-5xl'>
                 <DialogTitle className=' hidden'></DialogTitle>
                 <div className=' relative h-full md:max-h-[90vh] overflow-y-auto grid lg:grid-cols-3 scrollModal'>
-                    <div className='p-4 lg:col-span-2'>
+                    <div className='p-4 lg:col-span-2 relative'>
+                        {currentImage?.Pro && <img src="/crown.png" width={30} height={30} className=' absolute left-5 top-5 z-10' alt="proImage" />}
                         <img src={currentImage?.img} className='max-h-[80vh] lg:sticky lg:top-4 rounded-xl mx-auto' alt="" />
                     </div>
                     <div className=' h-full flex flex-col gap-y-5 justify-between'>
@@ -168,7 +174,7 @@ const ImageModal = ({
                         </div>
 
                         <div className='flex justify-between items-center px-4 pb-4'>
-                            {currentImage?.img &&
+                            {currentImage?.img && isSubscribed &&
                                 <DropdownMenu>
                                     <DropdownMenuTrigger className='bg-[#384261] text-white px-4 py-3 text-sm flex rounded-md gap-x-2'>
                                         {copyLink ?
@@ -188,7 +194,7 @@ const ImageModal = ({
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             }
-                            <Button onClick={handleDownload} className='bg-gradient-to-r from-teal-400 via-teal-500 h-10 gap-x-2 rounded-full to-teal-600'>
+                            <Button onClick={handleDownload} className={cn('bg-gradient-to-r from-teal-400 via-teal-500 h-10 gap-x-2 rounded-full to-teal-600', !isSubscribed && "w-full")}>
                                 <Download size={20} />
                                 Download
                             </Button>

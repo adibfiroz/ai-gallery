@@ -49,9 +49,8 @@ const Home = async ({
       take: take,
       skip: skip
     }),
-    prismadb.image.findMany({ where: query, orderBy: orderByQuery }),
+    prismadb.image.count({ where: query, orderBy: orderByQuery }),
   ]);
-
 
   return (
     <Container>
@@ -69,7 +68,6 @@ const Home = async ({
         isSubscribed={isSubscribed}
         currentUser={currentUser}
         data={data}
-        totalCount={count}
         initialTake={take}
         orientation={orientation}
         sort={sort}

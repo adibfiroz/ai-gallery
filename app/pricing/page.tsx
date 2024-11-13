@@ -14,7 +14,7 @@ const tiers = [
         href: '#',
         priceMonthly: 0,
         description: "Get started and explore",
-        features: ['25 products', 'Up to 10,000 subscribers', 'Advanced analytics', '24-hour support response time'],
+        features: ['limited downloads', 'collections upto 5',],
         featured: false,
     },
     {
@@ -24,12 +24,10 @@ const tiers = [
         priceMonthly: 5,
         description: 'Unlimited benefits, one plan',
         features: [
-            'Unlimited products',
-            'Unlimited subscribers',
-            'Advanced analytics',
-            'Dedicated support representative',
-            'Marketing automations',
-            'Custom integrations',
+            'Unlimited downloads',
+            'collections upto 100',
+            'browse thousands of images',
+            'fast rendering'
         ],
         featured: true,
     },
@@ -79,7 +77,7 @@ const PricingPage = async () => {
                                             'text-5xl font-semibold tracking-tight',
                                         )}
                                     >
-                                        {tier.priceMonthly}
+                                        ${tier.priceMonthly}
                                     </span>
                                     <span className={cn(tier.featured ? 'text-gray-400' : 'text-gray-500', 'text-base')}>/month</span>
                                 </p>

@@ -11,7 +11,6 @@ interface FavouriteClientProps {
     currentUser?: SafeUser | null
     collections?: Collection[] | null
     initialTake: number
-    totalCount: Image[]
     isSubscribed: boolean
     freeCount: number
 }
@@ -20,7 +19,6 @@ const FavouriteClient = ({
     data,
     currentUser,
     initialTake,
-    totalCount,
     isSubscribed,
     freeCount,
     collections
@@ -58,7 +56,7 @@ const FavouriteClient = ({
                 freeCount={freeCount}
                 isSubscribed={isSubscribed}
                 currentUser={currentUser}
-                totalImages={totalCount}
+                totalImages={data}
                 handleLoadMore={handleLoadMore}
                 data={images}
             />

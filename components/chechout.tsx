@@ -41,7 +41,7 @@ const Checkout = ({
             <section>
                 <Button
                     type="submit"
-                    className={cn("bg-teal-500 text-white shadow-sm hover:bg-teal-400 focus-visible:outline-teal-500 block rounded-md px-3.5 w-full text-center text-sm font-semibold focus-visible:outline h-10 focus-visible:outline-2 focus-visible:outline-offset-2 sm:mt-10"
+                    className={cn("bg-teal-500 text-white shadow-sm hover:bg-teal-400 focus-visible:outline-teal-500 block rounded-md px-3.5 w-full text-center text-sm font-semibold focus-visible:outline h-10 focus-visible:outline-2 focus-visible:outline-offset-2 mt-8 sm:mt-10"
                     )}
                 >
                     {isSubscribed ? "Manage Subscription" : "Subcribe"}

@@ -65,6 +65,7 @@ model Image {
   img         String
   orientation Orients
   views       Int      @default(0)
+  Pro         Boolean  @default(false)
   tags        String[]
   userlikeIds String[] @db.ObjectId
   downloads   Int      @default(0)

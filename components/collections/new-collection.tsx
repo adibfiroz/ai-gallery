@@ -73,6 +73,7 @@ const NewCollection = ({
             setName("New Collection")
             handleCollection()
             router.replace(`/profile/${formattedName}/collections`)
+            router.refresh()
         } catch (error) {
             toast.error("Something went wrong!");
             setIsLoading(false)
