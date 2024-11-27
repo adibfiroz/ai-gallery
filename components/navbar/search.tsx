@@ -15,7 +15,6 @@ type RecentSearches = string[];
 
 const SearchComponent = () => {
     const [open, setOpen] = useState(false)
-    const [open2, setOpen2] = useState(false)
     const [dropDown, setDropDown] = useState(false)
     const [search, setSearch] = useState("")
     const router = useRouter()
@@ -30,6 +29,7 @@ const SearchComponent = () => {
         const inputValue = evt.target.value;
         const maxValueLength = 60; // Maximum number of digits allowed
 
+        if (!inputValue.trim()) return
         // Check if the length of the input value exceeds the maximum value length
         if (inputValue.length > maxValueLength) {
             // If it exceeds, truncate the input value to the maximum length
@@ -37,6 +37,13 @@ const SearchComponent = () => {
         }
         setSearch(evt.target.value);
     };
+
+    const handleEnter = (e: any) => {
+        if (e.key === 'Enter') {
+            if (!search.trim()) return
+            saveSearch(e.target.value);
+        }
+    }
 
     const saveSearch = (searchTerm: string): void => {
         let searches: RecentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
@@ -100,11 +107,7 @@ const SearchComponent = () => {
                         <input
                             onChange={handleChange}
                             onFocus={handleDrop}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    saveSearch((e.target as HTMLInputElement).value);
-                                }
-                            }}
+                            onKeyDown={handleEnter}
                             className={cn(' outline-none px-10 py-4 rounded-md w-full', dropDown && " rounded-b-none")}
                             placeholder="search images"
                             type='text' />

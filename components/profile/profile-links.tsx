@@ -27,13 +27,13 @@ const ProfileLinks = ({ currentUser, isSubscribed, collections }: ProfileLinksPr
             href: `/profile/${getParams}`,
         },
         {
+            label: 'Collections',
+            href: `/profile/${getParams}/collections`,
+        },
+        {
             label: 'Settings',
             href: `/profile/${getParams}/settings`,
             back: 'bg-gray-800/60'
-        },
-        {
-            label: 'Collections',
-            href: `/profile/${getParams}/collections`,
         },
     ]
 

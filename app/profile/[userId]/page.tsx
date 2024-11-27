@@ -5,7 +5,7 @@ import { TAKE } from '@/constants';
 import { getFreeDownloadCount } from '@/lib/api-limit';
 import prismadb from '@/lib/prismadb';
 import { checkSubscription } from '@/lib/subscription';
-import React from 'react'
+import React, { useState } from 'react'
 
 const ProfilePage = async () => {
     const currentUser = await getCurrentUser();
@@ -14,8 +14,8 @@ const ProfilePage = async () => {
     const collections = await getCollection()
 
 
-    const take = TAKE; // Initial limit
-    const skip = 0;  // Skip no records initially
+    const take = TAKE;
+    const skip = 0;
 
     const [data, count] = await prismadb.$transaction([
         prismadb.image.findMany({
