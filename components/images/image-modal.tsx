@@ -124,7 +124,6 @@ const ImageModal = ({
                 <DialogTitle className=' hidden'></DialogTitle>
                 <div className=' relative h-full md:max-h-[90vh] overflow-y-auto grid lg:grid-cols-3 scrollModal'>
                     <div className='p-4 lg:col-span-2 relative'>
-                        {currentImage?.Pro && <img src="/crown.png" width={30} height={30} className=' absolute left-5 top-5 z-10' alt="proImage" />}
                         <img src={currentImage?.img} className='max-h-[80vh] lg:sticky lg:top-4 rounded-xl mx-auto' alt="" />
                     </div>
                     <div className=' h-full flex flex-col gap-y-5 justify-between'>
@@ -138,11 +137,6 @@ const ImageModal = ({
                                 <div className="">
                                     <div className=" text-sm text-left font-semibold text-[#69676e]">Views</div>
                                     <div className=" text-sm text-left leading-6 mt-1">{currentImage?.views}</div>
-                                </div>
-
-                                <div className="">
-                                    <div className=" text-sm text-left font-semibold text-[#69676e]">orientation</div>
-                                    <div className=" text-sm text-left leading-6 mt-1">{currentImage?.orientation}</div>
                                 </div>
 
                                 <div className=" text-left">
@@ -164,19 +158,22 @@ const ImageModal = ({
                                         {currentImage?.downloads}
                                     </div>
                                 </div>
+
+                                <div className="">
+                                    {currentUser &&
+                                        <Button onClick={handleCollectionModal} className='h-12 rounded-full'>
+                                            Add to collection
+                                        </Button>
+                                    }
+                                </div>
                             </div>
 
-                            {currentUser &&
-                                <Button onClick={handleCollectionModal} className='h-12 mt-5'>
-                                    Add to collection
-                                </Button>
-                            }
                         </div>
 
                         <div className='flex justify-between items-center px-4 pb-4'>
                             {currentImage?.img && isSubscribed &&
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger className='bg-[#384261] text-white px-4 py-3 text-sm flex rounded-md gap-x-2'>
+                                    <DropdownMenuTrigger className='bg-[#384261] text-white px-4 py-3 text-sm flex rounded-full gap-x-2'>
                                         {copyLink ?
                                             <Check size={18} />
                                             :
@@ -194,13 +191,14 @@ const ImageModal = ({
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             }
-                            <Button onClick={handleDownload} className={cn('bg-gradient-to-r from-teal-400 via-teal-500 h-10 gap-x-2 rounded-full to-teal-600', !isSubscribed && "w-full")}>
+                            <Button onClick={handleDownload} className={cn('bg-gradient-to-r from-teal-400 via-teal-500 h-11 gap-x-2 rounded-full to-teal-600', !isSubscribed && "w-full")}>
                                 <Download size={20} />
                                 Download
                             </Button>
                         </div>
                     </div>
                 </div>
+                {currentImage?.Pro && <img src="/crown.png" width={30} height={30} className=' absolute left-4 top-4 z-10' alt="proImage" />}
                 <div onClick={handleImageModal} className='bg-[#384261] cursor-pointer rounded-full shadow-2xl absolute right-4 top-2'>
                     <X className='text-white m-1' size={20} />
                 </div>
