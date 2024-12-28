@@ -37,10 +37,16 @@ export const getMoreImages = async (params: IImageParams) => {
       };
     }
 
+    if (sort === "featured") {
+      query.Pro = true;
+    }
+
     let orderByClause: any =
       sort === "newest"
         ? { createdAt: "desc" }
-        : sort === undefined && { views: "desc" };
+        : sort === undefined
+        ? { views: "desc" }
+        : undefined;
 
     const data = await prismadb.image.findMany({
       where: query,
