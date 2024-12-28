@@ -6,16 +6,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Image } from "@prisma/client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import queryString from "query-string";
 import { useCallback, useEffect, useState } from "react";
 
 interface SearchFiltersProps {
     count: number
+    isSubscribed: boolean
 }
 
-const SearchFilters = ({ count }: SearchFiltersProps) => {
+const SearchFilters = ({ count, isSubscribed }: SearchFiltersProps) => {
     const [value, setValue] = useState("All");
     const [value2, setValue2] = useState("Popular");
     const params = useSearchParams()
@@ -38,10 +38,10 @@ const SearchFilters = ({ count }: SearchFiltersProps) => {
             sort: value2 === "Popular" ? undefined : value2,
         }
 
-        if (params?.get('orientation') === value || params?.get('sort') === value2) {
-            delete updatedQuery.orientation;
-            delete updatedQuery.sort;
-        }
+        // if (params?.get('orientation') === value && params?.get('sort') === value2) {
+        //     delete updatedQuery.orientation;
+        //     delete updatedQuery.sort;
+        // }
 
         const url = queryString.stringifyUrl({
             url: `/search/${searchParams}`,
@@ -54,6 +54,7 @@ const SearchFilters = ({ count }: SearchFiltersProps) => {
     useEffect(() => {
         handleClick()
     }, [value, value2])
+
 
     return (
         <div>
@@ -88,6 +89,12 @@ const SearchFilters = ({ count }: SearchFiltersProps) => {
                         <SelectContent>
                             <SelectItem value="Popular">Popular</SelectItem>
                             <SelectItem value="Newest">Newest</SelectItem>
+                            <SelectItem value="featured" className="" disabled={!isSubscribed}>
+                                <div className="inline-flex gap-2">
+                                    <span>Featured</span>
+                                    <img src="/crown.png" width={18} height={18} className='' alt="proImage" />
+                                </div>
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

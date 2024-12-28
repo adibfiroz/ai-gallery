@@ -65,7 +65,7 @@ const Category = ({ category }: CategoryProps) => {
                 <div className=' relative py-4 '>
                     {canScrollLeft && (
                         <button
-                            className="absolute left-0 top-1/2 transform -translate-y-1/2 whiteL-gradient py-4 px-2 z-10"
+                            className="absolute left-0 top-1/2 transform -translate-y-1/2 whiteL-gradient pr-10 py-4 z-10"
                             onClick={scrollLeft}
                         >
                             <ChevronLeft size={22} />
@@ -80,7 +80,7 @@ const Category = ({ category }: CategoryProps) => {
 
                     {canScrollRight && (
                         <button
-                            className="absolute right-0 top-1/2 transform -translate-y-1/2 whiteR-gradient py-4 px-2 z-10 "
+                            className="absolute right-0 top-1/2 transform -translate-y-1/2 pl-10 whiteR-gradient py-4 z-10 "
                             onClick={scrollRight}
                         >
                             <ChevronRight className='' size={22} />

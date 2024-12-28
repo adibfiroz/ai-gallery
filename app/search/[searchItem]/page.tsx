@@ -43,10 +43,14 @@ const SearchPage = async ({
         };
     }
 
+    if (sort === 'featured') {
+        query.Pro = true;
+    }
+
     let orderByClause: any = sort === 'newest'
         ? { createdAt: 'desc' }
-        : sort === undefined &&
-        { views: 'desc' }
+        : sort === undefined ?
+            { views: 'desc' } : undefined
 
     const take = TAKE; // Initial limit
     const skip = 0;  // Skip no records initially
@@ -70,7 +74,7 @@ const SearchPage = async ({
     return (
         <Container>
             <Category category={tag?.relatedTags} />
-            <SearchFilters count={count} />
+            <SearchFilters count={count} isSubscribed={isSubscribed} />
             <ImageCleint
                 data={data}
                 sort={sort}
