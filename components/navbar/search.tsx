@@ -102,31 +102,31 @@ const SearchComponent = () => {
                 <DialogContent className=' w-[90%] sm:w-full max-w-xl !rounded-none border-0 !bg-transparent data-[state=open]:top-[10%] p-0'>
                     <DialogTitle className=' hidden'></DialogTitle>
                     <div className=' relative'>
-                        <Search className=' absolute left-2 top-4 text-stone-500' />
+                        <Search className=' absolute left-3 top-4 text-stone-500' />
 
                         <input
                             onChange={handleChange}
                             onFocus={handleDrop}
                             onKeyDown={handleEnter}
-                            className={cn(' outline-none px-10 py-4 rounded-md w-full', dropDown && " rounded-b-none")}
+                            className={cn(' outline-none px-12 py-4 rounded-lg w-full', dropDown && " rounded-b-none")}
                             placeholder="search images"
                             type='text' />
 
                         {search.length > 1 &&
-                            <Button onClick={() => saveSearch(search)} className='cursor-pointer absolute right-2 top-4 p-0 bg-transparent hover:bg-transparent border-0 h-auto shadow-none'>
+                            <Button onClick={() => saveSearch(search)} className='cursor-pointer absolute right-3 top-4 p-0 bg-transparent hover:bg-transparent border-0 h-auto shadow-none'>
                                 <SendHorizonal className=' text-teal-500' />
                             </Button>
                         }
 
                         {dropDown &&
-                            <ul className=' absolute top-14 -left-0 -right-0 border rounded-b-md bg-white p-4'>
+                            <ul className=' absolute top-14 -left-0 -right-0 border rounded-b-lg bg-white p-4'>
                                 <li className='flex justify-between pb-4'>
                                     <span> Recent searches</span>
                                     <div className=' cursor-pointer' onClick={clearRecentSearches}>clear</div>
                                 </li>
                                 <li className='flex flex-wrap gap-4 overflow-auto'>
                                     {recentSearches.map((searchItem, index) => (
-                                        <div onClick={() => saveSearch(searchItem)} key={index} className='px-6 py-3 lowercase bg-white whitespace-nowrap border rounded-md cursor-pointer shadow-sm'>{searchItem}</div>
+                                        <div onClick={() => saveSearch(searchItem)} key={index} className='px-6 py-3 lowercase bg-white whitespace-nowrap border rounded-md cursor-pointer shadow-sm hover:bg-teal-500/20 hover:text-teal-800 transition duration-300'>{searchItem}</div>
                                     ))}
                                 </li>
                             </ul>

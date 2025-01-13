@@ -1,17 +1,6 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { ArrowRight, Check, Download, Link2, Play, SquareArrowOutUpRight, X } from 'lucide-react';
 import { Button } from '../ui/button';
 var FileSaver = require('file-saver');
@@ -20,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { Collection, Image, Orients } from '@prisma/client';
 import { SafeUser } from '@/app/types';
 import HeartButton from '../HeartButton';
-import { increamentDownloads, increamentViewsCount } from '@/app/actions/image';
+import { getRelatedImages, increamentDownloads, increamentViewsCount } from '@/app/actions/image';
 import { useLoginModal } from '@/hooks/user-login-modal';
 import toast from 'react-hot-toast';
 import { increaseFreeDownloadLimit } from '@/lib/api-limit';
@@ -28,7 +17,9 @@ import { useRouter } from 'next/navigation';
 import CollectionButton from '../collection-button';
 import Link from 'next/link';
 import { MAX_DOWNLOAD_LIMIT } from '@/constants';
-
+import Category from '../category';
+import { Image as AntImage, Dropdown, MenuProps, Modal } from 'antd';
+import ImageCard from './image-card';
 
 interface ImageModalProps {
     open: boolean;
@@ -97,14 +88,15 @@ const ImageModal = ({
     const left = async () => {
         if (currentIndex > 0) {
             setCurrentIndex(currentIndex - 1);
-            await increamentViewsCount({ imageId: currentImage?.id })
+            // await increamentViewsCount({ imageId: currentImage?.id })
+            Modal.destroyAll()
         }
     };
 
     const right = async () => {
         if (currentIndex < totalImages.length - 1) {
             setCurrentIndex(currentIndex + 1);
-            await increamentViewsCount({ imageId: currentImage?.id })
+            // await increamentViewsCount({ imageId: currentImage?.id })
         }
     };
 
@@ -118,18 +110,71 @@ const ImageModal = ({
 
     const formattedName = currentUser?.name?.replace(/\s+/g, '-').toLowerCase();
 
+    const items: MenuProps['items'] = [
+        {
+            label: (
+                <CopyToClipboard text={currentImage?.img} onCopy={onCopyLink}>
+                    <div className='flex items-center gap-2'>
+                        <Link2 size={18} />
+                        copy link
+                    </div>
+                </CopyToClipboard>
+            ),
+            key: '0',
+        },
+    ];
+
+    const [relatedImages, setRelatedImages] = useState<Image[] | null>([])
+    const [isLoading, setIsLoading] = useState(false)
+
+    const fetchRelatedImages = async () => {
+        setIsLoading(true)
+        try {
+            const res = await getRelatedImages({ tags: currentImage.tags })
+            setRelatedImages(res)
+            setIsLoading(false)
+        } catch (error) {
+            setIsLoading(false)
+            toast.error("Error fetching Similar Images")
+        }
+    }
+
+    useEffect(() => {
+        if (currentImage?.tags) {
+            fetchRelatedImages()
+        }
+    }, [currentImage?.tags])
+
+
+    const handleLoadMore = () => {
+
+    }
+
+
     return (
-        <Dialog open={open} onOpenChange={handleImageModal}>
-            <DialogContent className='p-0 md:w-[90%] h-full md:h-auto border-0  outline-none md:rounded-lg  max-w-5xl'>
-                <DialogTitle className=' hidden'></DialogTitle>
-                <div className=' relative h-full md:max-h-[90vh] overflow-y-auto grid lg:grid-cols-3 scrollModal'>
-                    <div className='p-4 lg:col-span-2 relative'>
-                        <img src={currentImage?.img} className='max-h-[80vh] lg:sticky lg:top-4 rounded-xl mx-auto' alt="" />
+        <Modal
+            open={open}
+            onCancel={handleImageModal}
+            width={1000}
+            centered
+            destroyOnClose={true}
+            cancelButtonProps={{ hidden: true }}
+            okButtonProps={{ hidden: true }}
+            className=''>
+            <div className=' relative h-full'>
+                <div className=' grid lg:grid-cols-3'>
+                    <div className='p-4 lg:col-span-2 relative text-center prevImage'>
+                        <div className='mb-10 lg:mb-0'></div>
+                        <AntImage
+                            className='max-h-[80vh] rounded-xl'
+                            src={currentImage?.img}
+                            fallback='/fallback-image.png'
+                        />
                     </div>
                     <div className=' h-full flex flex-col gap-y-5 justify-between'>
                         <div className='p-4'>
-                            <div>Captions:</div>
-                            <div className='bg-stone-600/5 w-full text-sm rounded-xl p-3 mt-2'>
+                            <div>Caption</div>
+                            <div className='bg-stone-600/5 w-full text-sm rounded-xl p-3 mt-3'>
                                 {currentImage?.caption}
                             </div>
 
@@ -171,80 +216,102 @@ const ImageModal = ({
                         </div>
 
                         <div className='flex justify-between items-center px-4 pb-4'>
-                            {currentImage?.img && isSubscribed &&
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className='bg-[#384261] text-white px-4 py-3 text-sm flex rounded-full gap-x-2'>
+                            {currentImage?.img &&
+                                <Dropdown
+                                    menu={{ items }}
+                                    placement="topLeft"
+                                    trigger={['click']}>
+                                    <a onClick={(e) => e.preventDefault()} className=' text-white items-center bg-[#384261] px-4 py-3 text-sm flex rounded-full gap-x-2'>
                                         {copyLink ?
                                             <Check size={18} />
                                             :
                                             <SquareArrowOutUpRight size={18} />
                                         }
                                         Share
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align='start'>
-                                        <CopyToClipboard text={currentImage?.img} onCopy={onCopyLink}>
-                                            <DropdownMenuItem className=' justify-between'>
-                                                <Link2 size={18} />
-                                                copy link
-                                            </DropdownMenuItem>
-                                        </CopyToClipboard>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                    </a>
+                                </Dropdown>
                             }
-                            <Button onClick={handleDownload} className={cn('bg-gradient-to-r from-teal-400 via-teal-500 h-11 gap-x-2 rounded-full to-teal-600', !isSubscribed && "w-full")}>
+                            <Button onClick={handleDownload} className={cn('bg-gradient-to-r from-teal-400 via-teal-500 h-11 gap-x-2 rounded-full to-teal-600')}>
                                 <Download size={20} />
                                 Download
                             </Button>
                         </div>
                     </div>
                 </div>
-                {currentImage?.Pro && <img src="/crown.png" width={30} height={30} className=' absolute left-4 top-4 z-10' alt="proImage" />}
-                <div onClick={handleImageModal} className='bg-[#384261] cursor-pointer rounded-full shadow-2xl absolute right-4 top-2'>
-                    <X className='text-white m-1' size={20} />
+
+                <div className='px-4 relative'>
+                    <Category category={currentImage?.tags} />
                 </div>
 
-                {(data && currentIndex > 0) &&
-                    <button onClick={left} className=" p-2 group/item cursor-pointer fixed top-[45%] left-4 md:-left-10 text-white z-50 bg-black border border-gray-500 rounded-full ">
-                        <Play size={18} className='fill-white transition-all duration-200 rotate-180 group-hover/item:text-[#00ffdf] group-hover/item:fill-[#00ffdf]' />
-                    </button>
-                }
-                {(data && currentIndex < totalImages.length - 1) &&
-                    <button onClick={right} className="p-2 group/item cursor-pointer text-white fixed top-[45%] right-4 md:-right-10 z-50 bg-black rounded-full border border-gray-500">
-                        <Play size={18} className='fill-white transition-all duration-200 group-hover/item:text-[#00ffdf] group-hover/item:fill-[#00ffdf] ' />
-                    </button>
-                }
+                <div className='px-4 relative'>
+                    {isLoading ?
+                        <div className='grid grid-cols-4 gap-4 pb-5'>
+                            {Array.from({ length: 8 }, (_, index) => (
+                                <div key={index} className=' aspect-square rounded-xl bg-gray-200 animate-pulse'></div>
+                            ))}
+                        </div>
+                        : relatedImages &&
+                        <ImageCard
+                            collections={collections}
+                            freeCount={freeCount}
+                            isSubscribed={isSubscribed}
+                            currentUser={currentUser}
+                            totalImages={relatedImages}
+                            handleLoadMore={handleLoadMore}
+                            data={relatedImages}
+                            relatedImages={relatedImages}
+                        />}
+                </div>
 
-                {currentUser &&
-                    <Dialog open={open2} onOpenChange={handleCollectionModal}>
-                        <DialogContent className=' w-[90%] sm:w-full max-w-xl rounded-xl border-0'>
-                            <div className='flex justify-between'>
-                                <DialogTitle className='text-2xl text-[#384261] text-center'>Save to Collection</DialogTitle>
-                                <X className=' cursor-pointer' onClick={handleCollectionModal} size={26} />
-                            </div>
-                            <div className='max-h-[50vh] scrollModal overflow-y-auto space-y-3 pr-1'>
-                                {collections?.map((item) => (
-                                    <div key={item.id} className=' rounded-md flex items-center justify-between bg-gray-800/15 pr-2 gap-x-4'>
-                                        <div className=' truncate px-4 py-3'>{item.name}</div>
-                                        <CollectionButton
-                                            currentUser={currentUser}
-                                            imageId={currentImage?.id}
-                                            collection={item}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
+            </div>
 
-                            <div className='mt-2'>
-                                <Link className='flex items-center gap-2 bg-black text-white rounded-md py-4 px-6 hover:opacity-85 w-fit mx-auto' href={`/profile/${formattedName}/collections`}>
-                                    Collections
-                                    <ArrowRight />
-                                </Link>
+            {(data && currentIndex > 0) &&
+                <button onClick={left} className=" p-2 group/item cursor-pointer fixed top-[45%] left-5 xl:left-16 text-white z-50 bg-black border border-gray-500 rounded-full ">
+                    <Play size={18} className='fill-white transition-all duration-200 rotate-180 group-hover/item:text-[#00ffdf] group-hover/item:fill-[#00ffdf]' />
+                </button>
+            }
+            {(data && currentIndex < totalImages.length - 1) &&
+                <button onClick={right} className="p-2 group/item cursor-pointer text-white fixed top-[45%] right-5 xl:right-16 z-50 bg-black rounded-full border border-gray-500">
+                    <Play size={18} className='fill-white transition-all duration-200 group-hover/item:text-[#00ffdf] group-hover/item:fill-[#00ffdf] ' />
+                </button>
+            }
+
+            {currentImage?.Pro && <img src="/crown.png" width={30} height={30} className=' absolute left-4 top-4 z-10' alt="proImage" />}
+
+            {currentUser &&
+                <Modal
+                    open={open2}
+                    onCancel={handleCollectionModal}
+                    width={500}
+                    centered
+                    cancelButtonProps={{ hidden: true }}
+                    okButtonProps={{ hidden: true }}
+                >
+                    <div className='flex justify-between p-4'>
+                        <div className='text-2xl text-[#384261] font-semibold text-center'>Save to Collection</div>
+                    </div>
+                    <div className='max-h-[50vh] overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
+                        {collections?.map((item) => (
+                            <div key={item.id} className=' rounded-md flex items-center justify-between bg-gray-800/15 pr-2 gap-x-4'>
+                                <div className=' truncate px-4 py-3'>{item.name}</div>
+                                <CollectionButton
+                                    currentUser={currentUser}
+                                    imageId={currentImage?.id}
+                                    collection={item}
+                                />
                             </div>
-                        </DialogContent>
-                    </Dialog>
-                }
-            </DialogContent>
-        </Dialog>
+                        ))}
+                    </div>
+
+                    <div className='mt-2 pb-5'>
+                        <Link className='flex items-center gap-2 bg-black text-white rounded-md py-4 px-6 hover:opacity-85 w-fit mx-auto text-lg' href={`/profile/${formattedName}/collections`}>
+                            Collections
+                            <ArrowRight />
+                        </Link>
+                    </div>
+                </Modal>
+            }
+        </Modal>
     )
 }
 

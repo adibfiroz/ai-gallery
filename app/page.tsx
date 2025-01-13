@@ -54,9 +54,9 @@ const Home = async ({
 
   return (
     <Container>
-      <div className="rounded-2xl p-4 h-52 bg-no-repeat bg-cover bg-bottom bg-[linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),url('/backBanner.jpg')]">
+      <div className="rounded-2xl p-4 h-52 bg-no-repeat bg-cover bg-bottom bg-[linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)),url('/backBanner.jpg')]">
         <div className="flex justify-center items-center leading-[55px] text-white h-full text-5xl font-extrabold">
-          <div>Only the best <span className=' font-extrabold text-teal-500'> AI </span> images</div>
+          <div>Built Only For <span className=' font-extrabold text-emerald-400 animate-pulse'> AI </span></div>
         </div>
       </div>
 
