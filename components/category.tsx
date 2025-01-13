@@ -11,9 +11,8 @@ interface SliderItemProps {
 }
 
 const SliderItem: React.FC<SliderItemProps> = ({ label }) => {
-
     return (
-        <Link href={`/search/${label}`} className={cn("px-6 py-3 bg-white whitespace-nowrap border rounded-md shadow-sm hover:bg-teal-500/20 hover:text-teal-800 cursor-pointer transition-all duration-300")}>
+        <Link href={`/search/${label}`} className={cn("px-6 py-3 bg-white whitespace-nowrap border rounded-md shadow-sm hover:bg-teal-500/20 hover:text-teal-800 cursor-pointer transition-all duration-300 lowercase text-[16px]")}>
             {label}
         </Link>
     );

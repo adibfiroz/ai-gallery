@@ -14,7 +14,7 @@ const tiers = [
         href: '#',
         priceMonthly: 0,
         description: "Get started and explore",
-        features: ['limited downloads', 'collections upto 5', 'save your favourites'],
+        features: ['Limited downloads', 'Collections upto 5'],
         featured: false,
     },
     {
@@ -25,10 +25,9 @@ const tiers = [
         description: 'Unlimited benefits, one plan',
         features: [
             'Unlimited downloads',
-            'collections upto 100',
-            'browse thousands of images',
-            'filter featured images',
-            'share images'
+            'Collections upto 100',
+            'Browse thousands of images',
+            'Filter featured images',
         ],
         featured: true,
     },

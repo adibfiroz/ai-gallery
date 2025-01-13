@@ -17,7 +17,6 @@ import toast from 'react-hot-toast'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { removeImagetoCollection } from '@/app/actions/collection'
 import { MAX_DOWNLOAD_LIMIT } from '@/constants'
-
 interface ImageCardProps {
     data: Image[]
     totalImages: Image[]
@@ -26,9 +25,11 @@ interface ImageCardProps {
     currentUser?: SafeUser | null
     isSubscribed: boolean
     freeCount: number
+    relatedImages?: Image[]
 }
 
-const ImageCard = ({ data, totalImages, isSubscribed, collections, freeCount, currentUser, handleLoadMore }: ImageCardProps) => {
+
+const ImageCard = ({ data, totalImages, relatedImages, isSubscribed, collections, freeCount, currentUser, handleLoadMore }: ImageCardProps) => {
     const [open, setOpen] = useState(false)
     const [selectedItems, setSelectedItems] = useState<Image | undefined>();
     const [filterImage, setFilterImage] = useState(data)
@@ -40,13 +41,13 @@ const ImageCard = ({ data, totalImages, isSubscribed, collections, freeCount, cu
     const getCollectionId = params?.collectionId as string
 
     const handleImageModal = () => {
-        setOpen(!open)
         setSelectedItems(undefined)
+        setOpen(false)
     }
 
     const handleData = async (item: Image) => {
-        setOpen(true)
         setSelectedItems(item)
+        setOpen(true)
         await increamentViewsCount({ imageId: item.id })
     };
 
@@ -93,6 +94,7 @@ const ImageCard = ({ data, totalImages, isSubscribed, collections, freeCount, cu
         setFilterImage(data)
     }, [data])
 
+
     return (
         <div>
             <InfiniteScroll
@@ -116,7 +118,7 @@ const ImageCard = ({ data, totalImages, isSubscribed, collections, freeCount, cu
                     columnClassName="my-masonry-grid_column">
                     {filterImage.map((item: Image) => (
                         <div onClick={() => handleData(item)} key={item.id} className=' relative group/item select-none overflow-hidden cursor-pointer'>
-                            {pathName === `/profile/${formattedName}/collections/${getCollectionId}` &&
+                            {(pathName === `/profile/${formattedName}/collections/${getCollectionId}` && !relatedImages) &&
                                 <Button onClick={(e) => handleRemove(e, item.id)} className='bg-white md:opacity-0 md:group-hover/item:opacity-100 rounded-full p-0 w-9 text-[#ff0000] hover:bg-gray-200 absolute right-4 top-4 z-20'>
                                     <X />
                                 </Button>
@@ -143,6 +145,7 @@ const ImageCard = ({ data, totalImages, isSubscribed, collections, freeCount, cu
                 </Masonry>
             </InfiniteScroll>
 
+
             <ImageModal
                 collections={collections}
                 freeCount={freeCount}
@@ -153,6 +156,7 @@ const ImageCard = ({ data, totalImages, isSubscribed, collections, freeCount, cu
                 open={open}
                 handleImageModal={handleImageModal}
             />
+
         </div>
     )
 }

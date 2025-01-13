@@ -7,15 +7,14 @@ body {
 }
 
 .scrollHide::-webkit-scrollbar {
-  width: 0px; 
+  width: 0px;
   background-color: transparent;
   height: 0px;
 }
 
-
 .scrollHide::-webkit-scrollbar-thumb {
-  background-color: transparent; 
-  border-radius: 4px; 
+  background-color: transparent;
+  border-radius: 4px;
 }
 
 .scrollModal::-webkit-scrollbar {
@@ -25,22 +24,20 @@ body {
 }
 
 .scrollModal::-webkit-scrollbar-thumb {
-  background-color:#57534e3a; /* Color of the scrollbar thumb */
+  background-color: #57534e3a; /* Color of the scrollbar thumb */
   border-radius: 1px; /* Border radius of the scrollbar thumb */
 }
 
 .profile-scroll::-webkit-scrollbar {
-  width: 0px; 
+  width: 0px;
   background-color: transparent;
   height: 0px;
 }
 
-
 .profile-scroll::-webkit-scrollbar-thumb {
-  background-color: transparent; 
-  border-radius: 4px; 
+  background-color: transparent;
+  border-radius: 4px;
 }
-
 
 .my-masonry-grid {
   display: -webkit-box; /* Not needed if autoprefixing */
@@ -55,32 +52,50 @@ body {
   background-clip: padding-box;
 }
 
-.my-masonry-grid_column > div { /* change div to reference your elements you put in <Masonry> */
+.my-masonry-grid_column > div {
+  /* change div to reference your elements you put in <Masonry> */
   margin-bottom: 15px;
 }
 
 .black-gradient {
-  background: linear-gradient(rgba(18, 19, 21, 0) -2.43%, rgb(18, 19, 21) 110.57%);
+  background: linear-gradient(
+    rgba(18, 19, 21, 0) -2.43%,
+    rgb(18, 19, 21) 110.57%
+  );
 }
 
 .whiteR-gradient {
-  background: linear-gradient(270deg,#fff 0,hsla(0,0%,100%,0));
+  background: linear-gradient(270deg, #fff 0, hsla(0, 0%, 100%, 0));
 }
 
 .whiteL-gradient {
-  background: linear-gradient(90deg,#fff 0,hsla(0,0%,100%,0));
+  background: linear-gradient(90deg, #fff 0, hsla(0, 0%, 100%, 0));
 }
 
 .DialogOverlay {
-	background: rgba(0 0 0 / 0.5);
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	display: grid;
-	place-items: center;
-	overflow-y: auto;
+  background: rgba(0 0 0 / 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+}
+
+.ant-modal-content {
+  @apply !p-0;
+}
+
+.prevImage .ant-image-mask {
+  @apply rounded-xl;
+}
+
+.ant-modal-mask,
+.ant-image-preview-mask {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(10px);
 }
 
 @layer utilities {

@@ -34,7 +34,7 @@ const GoToTop = () => {
 
     return (
         <div className={cn(' text-center sticky z-30 w-fit mx-auto bottom-6', visible ? " block" : " hidden")}>
-            <button className={cn("cursor-pointer  mt-3 z-10 w-10 h-10 mx-auto bg-[#384261] rounded-full ")} onClick={scrollToTop} style={{ boxShadow: "0 0 10px 0 rgba(0,0,0,.3)" }}>
+            <button className={cn("cursor-pointer border border-white/40 mt-3 z-10 mx-auto bg-[#384261] rounded-full ")} onClick={scrollToTop} style={{ boxShadow: "0 0 10px 0 rgba(0,0,0,.3)" }}>
                 <ArrowUp size={24} className=" text-white m-2" />
             </button>
         </div>
