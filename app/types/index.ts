@@ -1,6 +1,10 @@
-import { Image, User } from "@prisma/client";
+import { Collection, Image, User } from "@prisma/client";
 
 export type SafeImage = Omit<Image, "createdAt"> & {
+  createdAt: string;
+};
+
+export type SafeCollection = Omit<Collection, "createdAt"> & {
   createdAt: string;
 };
 

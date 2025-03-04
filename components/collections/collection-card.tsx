@@ -19,7 +19,7 @@ import {
 import { Collection, Image } from '@prisma/client'
 import moment from 'moment'
 import { cn } from '@/lib/utils'
-import { SafeUser } from '@/app/types'
+import { SafeCollection, SafeUser } from '@/app/types'
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -28,8 +28,8 @@ import { getCollectionCardImages, moreCollectionImages } from '@/app/actions/get
 import { Image as AntImage } from 'antd';
 
 interface CollectionCardProps {
-    data: Collection
-    collections: Collection[]
+    data: SafeCollection
+    collections: SafeCollection[]
     currentUser?: SafeUser | null
 }
 
