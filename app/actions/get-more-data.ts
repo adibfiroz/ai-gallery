@@ -1,25 +1,24 @@
 "use server";
 
 import prismadb from "@/lib/prismadb";
-import getCurrentUser from "./getCurrentUser";
+import { getCurrentUser } from "./getCurrentUser";
+import { TAKE } from "@/constants";
 
 interface ICollectionParams {
   collectionId: string;
-  take: number;
-  skip: number;
+  page?: number;
 }
 
 export interface IImageParams {
   orientation?: string;
   sort?: string;
-  take: number;
-  skip: number;
   searchItem?: string;
+  page: number;
 }
 
 export const getMoreImages = async (params: IImageParams) => {
   try {
-    const { orientation, sort, take, skip, searchItem } = params;
+    const { orientation, sort, searchItem, page } = params;
 
     let query: any = {};
 
@@ -51,11 +50,20 @@ export const getMoreImages = async (params: IImageParams) => {
     const data = await prismadb.image.findMany({
       where: query,
       orderBy: orderByClause,
-      take: take,
-      skip: skip,
+      take: TAKE,
+      skip: (page - 1) * TAKE,
     });
 
-    return data;
+    const totalImages = await prismadb.image.count({
+      where: query,
+      orderBy: orderByClause,
+    });
+
+    const hasMore = page && page * TAKE < totalImages;
+
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    return { data, hasMore };
   } catch (error: any) {
     throw new Error(error);
   }
@@ -69,7 +77,7 @@ export const moreCollectionImages = async (params: ICollectionParams) => {
       throw new Error("Unauthorized!");
     }
 
-    const { collectionId, take, skip } = params;
+    const { collectionId, page } = params;
 
     const data = await prismadb.collection.findUnique({
       where: {
@@ -78,8 +86,51 @@ export const moreCollectionImages = async (params: ICollectionParams) => {
       },
       include: {
         images: {
-          take,
-          skip,
+          take: TAKE,
+          skip: page && (page - 1) * TAKE,
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+    });
+
+    const totalImages = await prismadb.image.count({
+      where: {
+        collectionIds: {
+          has: collectionId, // ✅ Correct filtering for many-to-many relationship
+        },
+      },
+    });
+
+    const hasMore = page && page * TAKE < totalImages;
+    const moreData = (data && data?.images) || [];
+
+    return { moreData, hasMore };
+  } catch (error: any) {
+    throw new Error(error);
+  }
+};
+
+export const getCollectionCardImages = async (params: ICollectionParams) => {
+  try {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      throw new Error("Unauthorized!");
+    }
+
+    const { collectionId } = params;
+
+    const data = await prismadb.collection.findUnique({
+      where: {
+        id: collectionId,
+        userId: currentUser?.id,
+      },
+      include: {
+        images: {
+          take: 2,
+          skip: 0,
           orderBy: {
             createdAt: "desc",
           },
@@ -88,7 +139,6 @@ export const moreCollectionImages = async (params: ICollectionParams) => {
     });
 
     const moreData = (data && data?.images) || [];
-
     return moreData;
   } catch (error: any) {
     throw new Error(error);
@@ -98,22 +148,32 @@ export const moreCollectionImages = async (params: ICollectionParams) => {
 export const getMoreFavoriteImages = async (params: IImageParams) => {
   try {
     const currentUser = await getCurrentUser();
-    const { take, skip } = params;
+    const { page } = params;
 
-    const favorites = await prismadb.image.findMany({
+    const data = await prismadb.image.findMany({
       where: {
         id: {
-          in: [...(currentUser?.favoriteIds || [])],
+          in: currentUser?.favoriteIds || [], // ✅ No unnecessary spread
         },
       },
-      take: take,
-      skip: skip,
+      take: TAKE,
+      skip: page ? (page - 1) * TAKE : 0, // ✅ Ensures a valid number for skip
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    return favorites;
+    const totalImages = await prismadb.image.count({
+      where: {
+        id: {
+          in: currentUser?.favoriteIds || [], // ✅ Same fix for count query
+        },
+      },
+    });
+
+    const hasMore = page && page * TAKE < totalImages;
+
+    return { data, hasMore };
   } catch (error: any) {
     throw new Error(error);
   }

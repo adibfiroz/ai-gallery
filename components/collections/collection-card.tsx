@@ -19,16 +19,17 @@ import {
 import { Collection, Image } from '@prisma/client'
 import moment from 'moment'
 import { cn } from '@/lib/utils'
-import { SafeUser } from '@/app/types'
+import { SafeCollection, SafeUser } from '@/app/types'
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { deleteCollection, updateCollection } from '@/app/actions/collection'
-import { moreCollectionImages } from '@/app/actions/get-more-data'
+import { getCollectionCardImages, moreCollectionImages } from '@/app/actions/get-more-data'
+import { Image as AntImage } from 'antd';
 
 interface CollectionCardProps {
-    data: Collection
-    collections: Collection[]
+    data: SafeCollection
+    collections: SafeCollection[]
     currentUser?: SafeUser | null
 }
 
@@ -47,7 +48,7 @@ const CollectionCard = ({ data, currentUser, collections }: CollectionCardProps)
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading2(true)
-            const res = await moreCollectionImages({ collectionId: data.id, take: 2, skip: 0 });
+            const res = await getCollectionCardImages({ collectionId: data.id });
             setGeImages(res);
             setIsLoading2(false)
         };
@@ -134,10 +135,20 @@ const CollectionCard = ({ data, currentUser, collections }: CollectionCardProps)
                     :
                     <div className={cn(' aspect-square grid grid-cols-1 gap-1 overflow-hidden', getImages.length > 1 && " grid-cols-2")}>
                         {getImages.length > 0 &&
-                            <img className='aspect-square h-full object-cover transition-all duration-200 group-hover/item:scale-105' src={firstImg} alt="" />
+                            <AntImage
+                                className='aspect-square !h-full object-cover transition-all duration-200 group-hover/item:scale-105'
+                                src={firstImg}
+                                fallback='/fallback-image.png'
+                                preview={false}
+                            />
                         }
                         {getImages.length > 1 &&
-                            <img className='aspect-square h-full object-cover transition-all duration-200 group-hover/item:scale-105' src={secondImg} alt="" />
+                            <AntImage
+                                className='aspect-square !h-full object-cover transition-all duration-200 group-hover/item:scale-105'
+                                src={secondImg}
+                                fallback='/fallback-image.png'
+                                preview={false}
+                            />
                         }
                         {getImages.length === 0 &&
                             <div className='flex justify-center items-center'>

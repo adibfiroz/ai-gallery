@@ -1,7 +1,7 @@
 "use server";
 
 import prismadb from "@/lib/prismadb";
-import getCurrentUser from "./getCurrentUser";
+import { getCurrentUser } from "./getCurrentUser";
 import { checkSubscription } from "@/lib/subscription";
 
 export const deleteUser = async () => {

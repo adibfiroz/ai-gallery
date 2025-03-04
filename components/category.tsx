@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-
+import { motion } from "framer-motion"
 
 interface SliderItemProps {
     label: string;
@@ -59,7 +59,11 @@ const Category = ({ category }: CategoryProps) => {
     }, []);
 
     return (
-        <div className='sticky top-[58px] z-20 sm:top-16 bg-white'>
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className='sticky top-[58px] z-20 sm:top-16 bg-white'>
             {items?.length &&
                 <div className=' relative py-4 '>
                     {canScrollLeft && (
@@ -87,7 +91,7 @@ const Category = ({ category }: CategoryProps) => {
                     )}
                 </div>
             }
-        </div>
+        </motion.div>
     )
 }
 

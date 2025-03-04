@@ -1,11 +1,9 @@
-import { getCollection } from '@/app/actions/collection'
-import getCurrentUser from '@/app/actions/getCurrentUser'
+import { getCurrentUser } from '@/app/actions/getCurrentUser'
 import Category from '@/components/category'
 import Container from '@/components/Container'
 import ImageCleint from '@/components/images/image-cleint'
 import SearchFilters from '@/components/search-Filters'
 import { TAKE } from '@/constants'
-import { getFreeDownloadCount } from '@/lib/api-limit'
 import prismadb from '@/lib/prismadb'
 import { checkSubscription } from '@/lib/subscription'
 import React from 'react'
@@ -19,8 +17,6 @@ const SearchPage = async ({
 }) => {
     const currentUser = await getCurrentUser();
     const isSubscribed = await checkSubscription();
-    const freeCount = await getFreeDownloadCount()
-    const collections = await getCollection()
 
     const { orientation, sort } = searchParams;
     const { searchItem } = params
@@ -28,10 +24,10 @@ const SearchPage = async ({
 
     let query: any = {}
 
-
-    if (query) {
-        query.orientation = orientation
-    };
+    const validOrientations = ['landscape', 'portrait', 'square'] as const;
+    if (validOrientations.includes(orientation as any)) {
+        query.orientation = orientation as string;
+    }
 
     if (decodedString) {
         query = {
@@ -43,17 +39,20 @@ const SearchPage = async ({
         };
     }
 
-    if (sort === 'featured') {
+    if (sort === 'featured' && isSubscribed) {
         query.Pro = true;
     }
 
-    let orderByClause: any = sort === 'newest'
-        ? { createdAt: 'desc' }
-        : sort === undefined ?
-            { views: 'desc' } : undefined
+    let orderByClause: any;
+    if (sort === 'newest') {
+        orderByClause = { createdAt: 'desc' };
+    } else if (!validOrientations.includes(orientation as any)) {
+        // If orientation is invalid, undefined, or null, sort by views: 'desc'
+        orderByClause = { views: 'desc' };
+    }
 
-    const take = TAKE; // Initial limit
-    const skip = 0;  // Skip no records initially
+    const take = TAKE;
+    const skip = 0;
 
     const [data, count] = await prismadb.$transaction([
         prismadb.image.findMany({
@@ -74,13 +73,16 @@ const SearchPage = async ({
     return (
         <Container>
             <Category category={tag?.relatedTags} />
-            <SearchFilters count={count} isSubscribed={isSubscribed} />
+            <SearchFilters
+                initialOrientation={orientation}
+                initialSort={sort}
+                count={count}
+                isSubscribed={isSubscribed}
+            />
             <ImageCleint
                 data={data}
                 sort={sort}
                 initialTake={take}
-                freeCount={freeCount}
-                collections={collections}
                 orientation={orientation}
                 currentUser={currentUser}
                 isSubscribed={isSubscribed}

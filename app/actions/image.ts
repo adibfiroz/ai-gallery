@@ -1,7 +1,7 @@
 "use server";
 
 import prismadb from "@/lib/prismadb";
-import getCurrentUser from "./getCurrentUser";
+import { getCurrentUser } from "./getCurrentUser";
 
 enum Orients {
   landscape = "landscape",
@@ -16,7 +16,7 @@ export interface ICreateImageParams {
   tags: string[];
 }
 
-interface IImageIdParams {
+export interface IImageIdParams {
   imageId?: string;
 }
 
@@ -41,6 +41,31 @@ export const CreateImage = async (params: ICreateImageParams) => {
     });
 
     return image;
+  } catch (error: any) {
+    return null;
+  }
+};
+
+export const getSingleImage = async (params: IImageIdParams) => {
+  try {
+    const { imageId } = params;
+
+    const image = await prismadb.image.findUnique({
+      where: {
+        id: imageId,
+      },
+    });
+
+    if (!image) {
+      return null;
+    }
+
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    return {
+      ...image,
+      createdAt: image.createdAt.toISOString(),
+    };
   } catch (error: any) {
     return null;
   }

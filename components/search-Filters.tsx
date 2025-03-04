@@ -9,55 +9,60 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import queryString from "query-string";
 import { useCallback, useEffect, useState } from "react";
+import { motion } from "framer-motion"
 
 interface SearchFiltersProps {
     count: number
     isSubscribed: boolean
+    initialOrientation?: string;
+    initialSort?: string;
 }
 
-const SearchFilters = ({ count, isSubscribed }: SearchFiltersProps) => {
-    const [value, setValue] = useState("All");
-    const [value2, setValue2] = useState("Popular");
-    const params = useSearchParams()
+const SearchFilters = ({ count, isSubscribed, initialOrientation, initialSort }: SearchFiltersProps) => {
     const router = useRouter();
     const pathName: any = usePathname()
 
-    const searchParams = pathName.split("/")[2]
-    const decodedString = decodeURIComponent(searchParams);
+    const searchParams = useSearchParams();
 
-    const handleClick = useCallback(() => {
-        let currentQuery = {};
+    const getSearchTag = pathName.split("/")[2]
+    const decodedString = decodeURIComponent(getSearchTag);
 
-        if (params) {
-            currentQuery = queryString.parse(params.toString())
-        }
+    // Initialize state from URL params or default props
+    const [value, setValue] = useState(() => {
+        return searchParams ? searchParams.get("orientation") || initialOrientation || "All" : "All";
+    });
 
-        const updatedQuery: any = {
-            ...currentQuery,
-            orientation: value === "All" ? undefined : value,
-            sort: value2 === "Popular" ? undefined : value2,
-        }
-
-        // if (params?.get('orientation') === value && params?.get('sort') === value2) {
-        //     delete updatedQuery.orientation;
-        //     delete updatedQuery.sort;
-        // }
-
-        const url = queryString.stringifyUrl({
-            url: `/search/${searchParams}`,
-            query: updatedQuery
-        }, { skipNull: true });
-
-        router.push(url.toLowerCase());
-    }, [value, value2, router, params]);
+    const [value2, setValue2] = useState(() => {
+        return searchParams ? searchParams.get("sort") || initialSort || "popular" : "popular";
+    });
 
     useEffect(() => {
-        handleClick()
-    }, [value, value2])
+        if (!searchParams) return; // Prevent running on SSR
+
+        const currentParams = queryString.parse(searchParams.toString());
+
+        const updatedParams = {
+            ...currentParams,
+            orientation: value === "All" ? undefined : value,
+            sort: value2 === "popular" ? undefined : value2,
+        };
+
+        const url = queryString.stringifyUrl(
+            { url: pathName, query: updatedParams },
+            { skipNull: true }
+        );
+
+        router.push(url.toLowerCase());
+    }, [value, value2, router, pathName]);
 
 
     return (
-        <div>
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            viewport={{ once: true }}
+        >
             <h2 className="text-3xl py-4 md:text-4xl text-left w-full text-wrap font-semibold capitalize text-[#384261]" style={{ wordBreak: "break-word" }}>
                 {count === 0 ?
                     <div>no results found for <span className=" text-gray-400">{`"`}{decodedString}{`"`}</span></div>
@@ -76,9 +81,9 @@ const SearchFilters = ({ count, isSubscribed }: SearchFiltersProps) => {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="All">All</SelectItem>
-                            <SelectItem value="Landscape">Landscape</SelectItem>
-                            <SelectItem value="Portrait">Portrait</SelectItem>
-                            <SelectItem value="Square">Square</SelectItem>
+                            <SelectItem value="landscape">Landscape</SelectItem>
+                            <SelectItem value="portrait">Portrait</SelectItem>
+                            <SelectItem value="square">Square</SelectItem>
                         </SelectContent>
                     </Select>
 
@@ -87,8 +92,8 @@ const SearchFilters = ({ count, isSubscribed }: SearchFiltersProps) => {
                             <SelectValue placeholder="sort" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="Popular">Popular</SelectItem>
-                            <SelectItem value="Newest">Newest</SelectItem>
+                            <SelectItem value="popular">Popular</SelectItem>
+                            <SelectItem value="newest">Newest</SelectItem>
                             <SelectItem value="featured" className="" disabled={!isSubscribed}>
                                 <div className="inline-flex gap-2">
                                     <span>Featured</span>
@@ -99,7 +104,7 @@ const SearchFilters = ({ count, isSubscribed }: SearchFiltersProps) => {
                     </Select>
                 </div>
             </div>
-        </div>
+        </motion.div>
 
     )
 }

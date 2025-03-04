@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import prismadb from "./prismadb";
-import getCurrentUser from "@/app/actions/getCurrentUser";
+import { getCurrentUser } from "@/app/actions/getCurrentUser";
 import { absoluteUrl } from "./utils";
 
 const settingsUrl = absoluteUrl("/pricing");

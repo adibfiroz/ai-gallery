@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { createCollection } from '@/app/actions/collection'
-import { SafeUser } from '@/app/types'
+import { SafeCollection, SafeUser } from '@/app/types'
 import { Collection } from '@prisma/client'
 import Link from 'next/link'
 import { MAX_FREE_COLLECTION_LIMIT } from '@/constants'
@@ -26,7 +26,7 @@ import { MAX_FREE_COLLECTION_LIMIT } from '@/constants'
 
 interface NewCollectionProps {
     currentUser?: SafeUser | null
-    collections?: Collection[] | null
+    collections?: SafeCollection[] | null
     isSubscribed: boolean
 }
 

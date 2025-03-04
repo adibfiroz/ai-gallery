@@ -1,7 +1,7 @@
 "use server";
 
 import prismadb from "@/lib/prismadb";
-import getCurrentUser from "./getCurrentUser";
+import { getCurrentUser } from "./getCurrentUser";
 import { checkSubscription } from "@/lib/subscription";
 import {
   MAX_FREE_COLLECTION_LIMIT,
@@ -76,10 +76,6 @@ export const getCollection = async () => {
   try {
     const currentUser = await getCurrentUser();
 
-    if (!currentUser) {
-      throw new Error("Unauthorized!");
-    }
-
     const collection = await prismadb.collection.findMany({
       where: {
         userId: currentUser?.id,
@@ -93,7 +89,12 @@ export const getCollection = async () => {
       return null;
     }
 
-    return collection;
+    const safeCollection = collection.map((collection) => ({
+      ...collection,
+      createdAt: collection.createdAt.toISOString(),
+    }));
+
+    return safeCollection;
   } catch (error: any) {
     return null;
   }

@@ -1,8 +1,9 @@
 "use server";
 
 import prismadb from "./prismadb";
-import getCurrentUser from "@/app/actions/getCurrentUser";
+import { getCurrentUser } from "@/app/actions/getCurrentUser";
 import { checkSubscription } from "./subscription";
+import { MAX_DOWNLOAD_LIMIT } from "@/constants";
 
 export const increaseFreeDownloadLimit = async () => {
   const currentUser = await getCurrentUser();
@@ -14,7 +15,7 @@ export const increaseFreeDownloadLimit = async () => {
   }
 
   if (!isSubscribed) {
-    if (freeCount >= 5) {
+    if (freeCount >= MAX_DOWNLOAD_LIMIT) {
       throw new Error("subscribe!");
     }
   }

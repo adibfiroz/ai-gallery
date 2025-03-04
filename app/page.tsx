@@ -3,12 +3,10 @@ import Container from "@/components/Container";
 import HomeFilters from "@/components/filters";
 import ImageCleint from "@/components/images/image-cleint";
 import prismadb from "@/lib/prismadb";
-import getCurrentUser from "./actions/getCurrentUser";
+import { getCurrentUser } from "./actions/getCurrentUser";
 import { checkSubscription } from "@/lib/subscription";
-import { getFreeDownloadCount } from "@/lib/api-limit";
-import { subscribe } from "diagnostics_channel";
-import { getCollection } from "./actions/collection";
 import { TAKE } from "@/constants";
+import HeaderBanner from "@/components/header-banner";
 
 const category = [
   'nature', 'animals', 'sci-fi', 'anime', 'cinematic',
@@ -23,24 +21,26 @@ const Home = async ({
 }) => {
   const currentUser = await getCurrentUser()
   const isSubscribed = await checkSubscription();
-  const freeCount = await getFreeDownloadCount()
-  const collections = await getCollection()
 
   const { orientation, sort } = searchParams;
 
   let query: any = {}
 
-  if (query) {
-    query.orientation = orientation
-  };
+  const validOrientations = ['landscape', 'portrait', 'square'] as const;
+  if (validOrientations.includes(orientation as any)) {
+    query.orientation = orientation as string;
+  }
 
-  let orderByQuery: any = sort === 'newest'
-    ? { createdAt: 'desc' }
-    : sort === undefined &&
-    { views: 'desc' }
+  let orderByQuery: any;
 
-  const take = TAKE; // Initial limit
-  const skip = 0;  // Skip no records initially
+  if (sort === 'newest') {
+    orderByQuery = { createdAt: 'desc' };
+  } else if (!validOrientations.includes(orientation as any)) {
+    orderByQuery = { views: 'desc' };
+  }
+
+  const take = TAKE;
+  const skip = 0;
 
   const [data, count] = await prismadb.$transaction([
     prismadb.image.findMany({
@@ -54,17 +54,13 @@ const Home = async ({
 
   return (
     <Container>
-      <div className="rounded-2xl p-4 h-52 bg-no-repeat bg-cover bg-bottom bg-[linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)),url('/backBanner.jpg')]">
-        <div className="flex justify-center items-center leading-[55px] text-white h-full text-5xl font-extrabold">
-          <div>Built Only For <span className=' font-extrabold text-emerald-400 animate-pulse'> AI </span></div>
-        </div>
-      </div>
-
+      <HeaderBanner />
       <Category category={category} />
-      <HomeFilters />
+      <HomeFilters
+        initialOrientation={orientation}
+        initialSort={sort}
+      />
       <ImageCleint
-        collections={collections}
-        freeCount={freeCount}
         isSubscribed={isSubscribed}
         currentUser={currentUser}
         data={data}
