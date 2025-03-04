@@ -1,3 +1,4 @@
+import { getFreeDownloadCount } from "@/lib/api-limit";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 export interface FreeDownloadState {
@@ -40,12 +41,8 @@ export const fetchFreeDownloadCount = createAsyncThunk(
   "freeDownload/fetchCount",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch("/api/download-count");
-      if (!response.ok) {
-        throw new Error("Failed to fetch count");
-      }
-      const data = await response.json();
-      return data.count;
+      const response = await getFreeDownloadCount();
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
