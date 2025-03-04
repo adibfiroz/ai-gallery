@@ -16,6 +16,7 @@ const useFavorite = ({ imageId, currentUser }: IUseFavorite) => {
   const loginModal = useLoginModal();
   const [effect, setEffect] = useState(false);
   const [effect2, setEffect2] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
 
   const hasFavorited = useMemo(() => {
     const list = currentUser?.favoriteIds || [];
@@ -31,7 +32,7 @@ const useFavorite = ({ imageId, currentUser }: IUseFavorite) => {
         loginModal.onOpen();
         return false;
       }
-
+      setisLoading(true);
       try {
         let request;
 
@@ -44,8 +45,9 @@ const useFavorite = ({ imageId, currentUser }: IUseFavorite) => {
         }
 
         await request();
-        // router.refresh();
+        setisLoading(false);
       } catch (error) {
+        setisLoading(false);
         toast.error("Something went wrongs!", {
           icon: "❌",
           style: {
@@ -62,6 +64,7 @@ const useFavorite = ({ imageId, currentUser }: IUseFavorite) => {
   return {
     hasFavorited,
     toggleFavorite,
+    isLoading,
     effect,
     effect2,
   };

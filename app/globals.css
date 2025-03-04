@@ -59,8 +59,8 @@ body {
 
 .black-gradient {
   background: linear-gradient(
-    rgba(18, 19, 21, 0) -2.43%,
-    rgb(18, 19, 21) 110.57%
+    rgba(18, 19, 21, 0) 60.43%,
+    rgb(18, 19, 21) 140.57%
   );
 }
 
@@ -96,6 +96,10 @@ body {
 .ant-image-preview-mask {
   background-color: rgba(0, 0, 0, 0.75) !important;
   backdrop-filter: blur(10px);
+}
+
+.antImgBlock .ant-image {
+  display: block;
 }
 
 @layer utilities {

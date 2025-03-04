@@ -1,11 +1,10 @@
-
 import prismadb from "@/lib/prismadb";
-import getCurrentUser from "@/app/actions/getCurrentUser";
+import { getCurrentUser } from "@/app/actions/getCurrentUser";
 
 const DAY_IN_MS = 86_400_000;
 
 export const checkSubscription = async () => {
-  const currentUser = await getCurrentUser()
+  const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     return false;
@@ -21,7 +20,7 @@ export const checkSubscription = async () => {
       stripeCustomerId: true,
       stripePriceId: true,
     },
-  })
+  });
 
   if (!userSubscription) {
     return false;
@@ -29,7 +28,8 @@ export const checkSubscription = async () => {
 
   const isValid =
     userSubscription.stripePriceId &&
-    userSubscription.stripeCurrentPeriodEnd?.getTime()! + DAY_IN_MS > Date.now()
+    userSubscription.stripeCurrentPeriodEnd?.getTime()! + DAY_IN_MS >
+      Date.now();
 
   return !!isValid;
 };

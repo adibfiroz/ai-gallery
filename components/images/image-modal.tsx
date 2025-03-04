@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
-import { ArrowRight, Check, Download, Link2, Play, SquareArrowOutUpRight, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react'
+import { ArrowRight, Bookmark, Check, Download, Link2, Play, SquareArrowOutUpRight, X } from 'lucide-react';
 import { Button } from '../ui/button';
 var FileSaver = require('file-saver');
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -20,16 +20,19 @@ import { MAX_DOWNLOAD_LIMIT } from '@/constants';
 import Category from '../category';
 import { Image as AntImage, Dropdown, MenuProps, Modal } from 'antd';
 import ImageCard from './image-card';
+import { fetchFreeDownloadCount } from '@/store/slices/freeDownloadSlice';
+import { useAppDispatch, useAppSelector } from '@/hooks/store';
+import { fetchCollections } from '@/store/slices/collectionSlice';
+import { fetchSingleImage } from '@/store/slices/imageSlice';
 
 interface ImageModalProps {
     open: boolean;
     data?: Image | undefined;
     totalImages: Image[]
-    collections?: Collection[] | null
     handleImageModal: () => void
     currentUser?: SafeUser | null
     isSubscribed: boolean
-    freeCount: number
+    count: number
 }
 
 const ImageModal = ({
@@ -39,14 +42,30 @@ const ImageModal = ({
     handleImageModal,
     currentUser,
     isSubscribed,
-    freeCount,
-    collections
+    count,
+
 }: ImageModalProps) => {
     const [open2, setOpen2] = useState(false)
     const [copyLink, setCopyLink] = useState(false);
-    const [currentIndex, setCurrentIndex] = useState(totalImages.findIndex(img => img.id === data?.id));
+    const [currentIndex, setCurrentIndex] = useState(totalImages?.findIndex(img => img.id === data?.id));
+    const currentImage = totalImages[currentIndex];
+
     const loginModal = useLoginModal()
     const router = useRouter()
+    const dispatch = useAppDispatch();
+
+    const { data: collections } = useAppSelector((state) => state.collection);
+    const { data: singleImage, loading } = useAppSelector((state) => state.image);
+
+    useEffect(() => {
+        if (currentUser) {
+            dispatch(fetchCollections());
+        }
+    }, [dispatch]);
+
+    const hasFavorited = useMemo(() => {
+        return collections?.some((collection: Collection) => collection.imageIds.includes(currentImage?.id)) ?? false;
+    }, [collections, currentImage?.id]);
 
     const handleCollectionModal = () => {
         setOpen2(!open2)
@@ -54,6 +73,7 @@ const ImageModal = ({
 
     const handleDownload = async () => {
         if (!currentUser) {
+            handleImageModal()
             loginModal.onOpen();
             return
         }
@@ -64,12 +84,12 @@ const ImageModal = ({
                     toast.error("subscribe for unlimited downloads")
                     return
                 }
-                if (freeCount >= MAX_DOWNLOAD_LIMIT) {
+                if (count >= MAX_DOWNLOAD_LIMIT) {
                     toast.error("you have reached your \n daily download limit")
                     return
                 }
                 await increaseFreeDownloadLimit()
-                router.refresh();
+                dispatch(fetchFreeDownloadCount())
             }
             FileSaver.saveAs(currentImage?.img, `${currentImage?.caption}.png`);
             await increamentDownloads({ imageId: currentImage?.id })
@@ -83,21 +103,26 @@ const ImageModal = ({
         setTimeout(() => setCopyLink(false), 3000);
     };
 
-    const currentImage = totalImages[currentIndex];
-
     const left = async () => {
-        if (currentIndex > 0) {
-            setCurrentIndex(currentIndex - 1);
-            // await increamentViewsCount({ imageId: currentImage?.id })
-            Modal.destroyAll()
-        }
+        setCurrentIndex(prevIndex => {
+            if (prevIndex > 0) {
+                const newIndex = prevIndex - 1;
+                dispatch(fetchSingleImage({ imageId: totalImages[newIndex]?.id }));
+                return newIndex;
+            }
+            return prevIndex;
+        });
     };
 
     const right = async () => {
-        if (currentIndex < totalImages.length - 1) {
-            setCurrentIndex(currentIndex + 1);
-            // await increamentViewsCount({ imageId: currentImage?.id })
-        }
+        setCurrentIndex(prevIndex => {
+            if (prevIndex < totalImages.length - 1) {
+                const newIndex = prevIndex + 1;
+                dispatch(fetchSingleImage({ imageId: totalImages[newIndex]?.id }));
+                return newIndex;
+            }
+            return prevIndex;
+        });
     };
 
     useEffect(() => {
@@ -150,6 +175,7 @@ const ImageModal = ({
 
     }
 
+    const hasMoreImage = false
 
     return (
         <Modal
@@ -187,12 +213,15 @@ const ImageModal = ({
                                 <div className=" text-left">
                                     <div className=" text-sm text-left font-semibold text-[#69676e]">Likes</div>
                                     <div className='flex items-center'>
-                                        <HeartButton
-                                            imageId={currentImage?.id}
-                                            currentUser={currentUser}
-                                        />
+                                        {currentUser &&
+                                            <HeartButton
+                                                imageId={currentImage?.id}
+                                                currentUser={currentUser}
+                                            />
+                                        }
 
-                                        {currentImage?.userlikeIds.length}
+                                        {singleImage?.userlikeIds.length || 0}
+
                                     </div>
                                 </div>
 
@@ -204,15 +233,22 @@ const ImageModal = ({
                                     </div>
                                 </div>
 
-                                <div className="">
-                                    {currentUser &&
-                                        <Button onClick={handleCollectionModal} className='h-12 rounded-full'>
-                                            Add to collection
-                                        </Button>
-                                    }
-                                </div>
+                                {currentUser &&
+                                    <div className="text-left">
+                                        <div className=" text-sm text-left font-semibold text-[#69676e]">Collections</div>
+                                        <>
+                                            {hasFavorited ?
+                                                <Button onClick={handleCollectionModal} className='p-0 shadow-none h-auto bg-transparent rounded-full hover:bg-transparent mt-1'>
+                                                    <Bookmark size={22} className={cn("fill-blue-700 text-blue-700")} />
+                                                </Button>
+                                                : <Button onClick={handleCollectionModal} className='p-0 shadow-none h-auto bg-transparent rounded-full hover:bg-transparent mt-1'>
+                                                    <Bookmark size={22} className={cn("text-blue-700")} />
+                                                </Button>
+                                            }
+                                        </>
+                                    </div>
+                                }
                             </div>
-
                         </div>
 
                         <div className='flex justify-between items-center px-4 pb-4'>
@@ -221,7 +257,7 @@ const ImageModal = ({
                                     menu={{ items }}
                                     placement="topLeft"
                                     trigger={['click']}>
-                                    <a onClick={(e) => e.preventDefault()} className=' text-white items-center bg-[#384261] px-4 py-3 text-sm flex rounded-full gap-x-2'>
+                                    <a onClick={(e) => e.preventDefault()} className=' text-white items-center bg-[#384261] px-4 py-2.5 text-sm flex rounded-full gap-x-2'>
                                         {copyLink ?
                                             <Check size={18} />
                                             :
@@ -231,7 +267,7 @@ const ImageModal = ({
                                     </a>
                                 </Dropdown>
                             }
-                            <Button onClick={handleDownload} className={cn('bg-gradient-to-r from-teal-400 via-teal-500 h-11 gap-x-2 rounded-full to-teal-600')}>
+                            <Button onClick={handleDownload} className={cn('bg-gradient-to-r rounded-full transition-all duration-300 from-teal-400 via-teal-500 h-10 gap-x-2  to-teal-600 hover:from-teal-500 hover:via-teal-600 hover:to-teal-700')}>
                                 <Download size={20} />
                                 Download
                             </Button>
@@ -252,14 +288,13 @@ const ImageModal = ({
                         </div>
                         : relatedImages &&
                         <ImageCard
-                            collections={collections}
-                            freeCount={freeCount}
                             isSubscribed={isSubscribed}
                             currentUser={currentUser}
                             totalImages={relatedImages}
                             handleLoadMore={handleLoadMore}
                             data={relatedImages}
                             relatedImages={relatedImages}
+                            hasMoreImage={hasMoreImage}
                         />}
                 </div>
 
@@ -290,10 +325,9 @@ const ImageModal = ({
                     <div className='flex justify-between p-4'>
                         <div className='text-2xl text-[#384261] font-semibold text-center'>Save to Collection</div>
                     </div>
-                    <div className='max-h-[50vh] overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
-                        {collections?.map((item) => (
-                            <div key={item.id} className=' rounded-md flex items-center justify-between bg-gray-800/15 pr-2 gap-x-4'>
-                                <div className=' truncate px-4 py-3'>{item.name}</div>
+                    <div className='max-h-[50vh] bg-gray-100 overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
+                        {collections?.map((item: Collection) => (
+                            <div key={item.id}>
                                 <CollectionButton
                                     currentUser={currentUser}
                                     imageId={currentImage?.id}
@@ -303,8 +337,8 @@ const ImageModal = ({
                         ))}
                     </div>
 
-                    <div className='mt-2 pb-5'>
-                        <Link className='flex items-center gap-2 bg-black text-white rounded-md py-4 px-6 hover:opacity-85 w-fit mx-auto text-lg' href={`/profile/${formattedName}/collections`}>
+                    <div className='py-4'>
+                        <Link className='flex items-center gap-2 bg-black text-white rounded-xl py-4 px-6 hover:opacity-85 w-fit mx-auto text-lg' href={`/profile/${formattedName}/collections`}>
                             Collections
                             <ArrowRight />
                         </Link>

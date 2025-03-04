@@ -1,7 +1,7 @@
 import Container from "@/components/Container"
 import ProfileInfo from "@/components/profile/profile-info";
 import ProfileLinks from "@/components/profile/profile-links";
-import getCurrentUser from "../actions/getCurrentUser";
+import { getCurrentUser } from "../actions/getCurrentUser";
 import ProtectedRoute from "@/components/profile/protected-route";
 import { getCollection } from "../actions/collection";
 import { checkSubscription } from "@/lib/subscription";

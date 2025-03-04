@@ -1,5 +1,5 @@
 import { getCollection } from '@/app/actions/collection'
-import getCurrentUser from '@/app/actions/getCurrentUser'
+import { getCurrentUser } from '@/app/actions/getCurrentUser'
 import CollectionCard from '@/components/collections/collection-card'
 import NewCollection from '@/components/collections/new-collection'
 import { checkSubscription } from '@/lib/subscription'

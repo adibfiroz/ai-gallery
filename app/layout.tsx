@@ -4,15 +4,16 @@ import Header from "@/components/navbar/header";
 import { Inter } from "next/font/google";
 import Footer from "@/components/navbar/footer";
 import { ModalProvider } from "@/components/modal-provider";
-import getCurrentUser from "./actions/getCurrentUser";
+import { getCurrentUser } from "./actions/getCurrentUser";
 import { ToasterProvider } from "@/components/toaster-provider";
 import { dailyLimit } from "./actions/user";
+import Providers from "@/components/providers";
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "Only the best AI images",
-  description: "get amazing AI images",
+  title: "The best of AI images",
+  description: "Browse thousands of AI images",
 };
 
 export default async function RootLayout({
@@ -27,11 +28,13 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ModalProvider />
-        <ToasterProvider />
-        <Header currentUser={currentUser} />
-        {children}
-        <Footer />
+        <Providers>
+          <ModalProvider />
+          <ToasterProvider />
+          <Header currentUser={currentUser} />
+          {children}
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

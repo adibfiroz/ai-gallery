@@ -1,8 +1,7 @@
 import { getCollection } from '@/app/actions/collection'
-import getCurrentUser from '@/app/actions/getCurrentUser'
+import { getCurrentUser } from '@/app/actions/getCurrentUser'
 import CollectionClient from '@/components/collections/collection-client'
 import { TAKE } from '@/constants'
-import { getFreeDownloadCount } from '@/lib/api-limit'
 import prismadb from '@/lib/prismadb'
 import { checkSubscription } from '@/lib/subscription'
 import React from 'react'
@@ -14,8 +13,6 @@ const SingleCollectionPage = async ({
 }) => {
     const currentUser = await getCurrentUser()
     const isSubscribed = await checkSubscription();
-    const freeCount = await getFreeDownloadCount()
-    const collections = await getCollection()
 
     const { collectionId } = params
 
@@ -62,9 +59,7 @@ const SingleCollectionPage = async ({
         <div>
             <CollectionClient
                 collectionId={collectionId}
-                collections={collections}
                 cName={data?.name}
-                freeCount={freeCount}
                 isSubscribed={isSubscribed}
                 currentUser={currentUser}
                 data={initialData}

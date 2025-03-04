@@ -23,6 +23,7 @@ const useCollection = ({
 }: IUseCollection) => {
   const router = useRouter();
   const loginModal = useLoginModal();
+  const [isloading, setisLoading] = useState(false);
 
   const hasFavorited = useMemo(() => {
     const list = collection?.imageIds || [];
@@ -38,7 +39,7 @@ const useCollection = ({
         loginModal.onOpen();
         return false;
       }
-
+      setisLoading(true);
       try {
         let request;
 
@@ -51,7 +52,7 @@ const useCollection = ({
         }
 
         await request();
-        // router.refresh();
+        setisLoading(false);
       } catch (error) {
         toast.error("Something went wrongs!", {
           icon: "❌",
@@ -69,6 +70,7 @@ const useCollection = ({
   return {
     hasFavorited,
     toggleCollection,
+    isloading,
   };
 };
 

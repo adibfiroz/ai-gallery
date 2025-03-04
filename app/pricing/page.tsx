@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { CheckIcon } from 'lucide-react'
 import React from 'react'
-import getCurrentUser from '../actions/getCurrentUser'
+import { getCurrentUser } from '../actions/getCurrentUser'
 import { checkSubscription } from '@/lib/subscription'
 
 const tiers = [

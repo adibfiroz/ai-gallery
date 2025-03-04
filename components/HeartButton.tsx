@@ -1,13 +1,12 @@
 'use client';
 
-
 import { SafeUser } from "@/app/types";
-
 import useFavorite from "../hooks/useFavorite";
-import { Heart, HeartIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useLoginModal } from "@/hooks/user-login-modal";
+import { HeartIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fetchCurrentUser } from "@/store/slices/userSlice";
+import { useAppDispatch } from "@/hooks/store";
+import { fetchSingleImage } from "@/store/slices/imageSlice";
 
 interface HeartButtonProps {
     imageId: string
@@ -18,39 +17,28 @@ const HeartButton: React.FC<HeartButtonProps> = ({
     imageId,
     currentUser
 }) => {
-    const { hasFavorited, toggleFavorite } = useFavorite({
+    const { hasFavorited, isLoading, toggleFavorite } = useFavorite({
         imageId,
         currentUser
     });
 
-    const [localIsFavorite, setLocalIsFavorite] = useState(hasFavorited);
-    const loginModal = useLoginModal()
-    const [isloading, setisLoading] = useState(false);
-
-    useEffect(() => {
-        setLocalIsFavorite(hasFavorited);
-    }, [hasFavorited, imageId]);
+    const dispatch = useAppDispatch();
 
     const handleToggle = async (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
-        if (!currentUser) {
-            loginModal.onOpen();
-            return
-        }
-        setisLoading(true)
-        setLocalIsFavorite(!localIsFavorite)
         toggleFavorite(e)
-        setisLoading(false)
+        dispatch(fetchCurrentUser())
+        dispatch(fetchSingleImage({ imageId: imageId }))
     }
 
     return (
         <div
             onClick={handleToggle}
-            className={cn("relative transition cursor-pointer bg-white rounded-full flex items-center justify-center", isloading && " pointer-events-none")}>
+            className={cn("relative transition cursor-pointer bg-white rounded-full flex items-center justify-center size-10 shadow-2xl backdrop-blur-xl", isLoading && " pointer-events-none")}>
             <HeartIcon
                 size={24}
                 className={
-                    localIsFavorite ? 'fill-[#ff0000] text-[#ff0000] m-2' : 'text-[#384261] m-2'
+                    hasFavorited ? 'fill-[#ff0000] text-[#ff0000]' : 'text-[#384261]'
                 }
             />
         </div>

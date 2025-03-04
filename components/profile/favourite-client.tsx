@@ -1,18 +1,18 @@
 "use client"
 
 import { SafeUser } from '@/app/types'
-import { Collection, Image } from '@prisma/client'
+import { Image } from '@prisma/client'
 import React, { useEffect, useState } from 'react'
 import ImageCard from '../images/image-card'
 import { getMoreFavoriteImages } from '@/app/actions/get-more-data'
+import { Button } from 'antd'
+import { SyncLoader } from 'react-spinners'
 
 interface FavouriteClientProps {
     data: Image[]
     currentUser?: SafeUser | null
-    collections?: Collection[] | null
     initialTake: number
     isSubscribed: boolean
-    freeCount: number
 }
 
 const FavouriteClient = ({
@@ -20,28 +20,32 @@ const FavouriteClient = ({
     currentUser,
     initialTake,
     isSubscribed,
-    freeCount,
-    collections
 }: FavouriteClientProps) => {
     const [images, setImages] = useState(data);
-    const [take, setTake] = useState(initialTake);
+    const [page, setPage] = useState(2);
+    const [hasMoreImage, setHasMoreImage] = useState<any>(true)
+    const [loading, setLoading] = useState(false)
 
     const handleLoadMore = async () => {
+        setLoading(true)
         try {
             const response = await getMoreFavoriteImages({
-                take: take,
-                skip: images.length,
+                page: page,
             });
 
-            const filteredNewImages = response.filter(newImage => {
+            const filteredNewImages = response.data?.filter(newImage => {
                 return !images.some(existingImage => existingImage.id === newImage.id);
             });
 
             setImages((prev) => [...prev, ...filteredNewImages]);
-
+            setHasMoreImage(response?.hasMore)
+            setPage((prev) => prev + 1)
+            setLoading(false)
         } catch (error) {
+            setLoading(false)
             console.error('Failed to load more images:', error);
         } finally {
+            setLoading(false)
         }
     };
 
@@ -52,14 +56,28 @@ const FavouriteClient = ({
     return (
         <div>
             <ImageCard
-                collections={collections}
-                freeCount={freeCount}
                 isSubscribed={isSubscribed}
                 currentUser={currentUser}
-                totalImages={data}
+                totalImages={images}
                 handleLoadMore={handleLoadMore}
                 data={images}
+                hasMoreImage={hasMoreImage}
             />
+
+            {loading &&
+                <div className='flex justify-center my-4'>
+                    <SyncLoader
+                        size={20}
+                        color="#b8c4c3"
+                    />
+                </div>
+            }
+
+            {(hasMoreImage && !loading) &&
+                <div className='text-center my-4' onClick={handleLoadMore}>
+                    <Button className='text-lg h-auto py-2 px-6'>Load More</Button>
+                </div>
+            }
         </div>
     )
 }
