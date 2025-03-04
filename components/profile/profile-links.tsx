@@ -4,13 +4,13 @@ import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils';
-import { SafeUser } from '@/app/types';
+import { SafeCollection, SafeUser } from '@/app/types';
 import NewCollection from '../collections/new-collection';
 import { Collection } from '@prisma/client';
 
 interface ProfileLinksProps {
     currentUser?: SafeUser | null
-    collections?: Collection[] | null
+    collections?: SafeCollection[] | null
     isSubscribed: boolean
 }
 
