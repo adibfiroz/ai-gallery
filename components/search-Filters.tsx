@@ -22,18 +22,18 @@ const SearchFilters = ({ count, isSubscribed, initialOrientation, initialSort }:
     const router = useRouter();
     const pathName: any = usePathname()
 
-    const searchParams = typeof window !== "undefined" ? useSearchParams() : null;
+    const searchParams = useSearchParams();
 
     const getSearchTag = pathName.split("/")[2]
     const decodedString = decodeURIComponent(getSearchTag);
 
     // Initialize state from URL params or default props
     const [value, setValue] = useState(() => {
-        return searchParams?.get("orientation") || initialOrientation || "All";
+        return searchParams ? searchParams.get("orientation") || initialOrientation || "All" : "All";
     });
 
     const [value2, setValue2] = useState(() => {
-        return searchParams?.get("sort") || initialSort || "Popular";
+        return searchParams ? searchParams.get("sort") || initialSort || "popular" : "popular";
     });
 
     useEffect(() => {
@@ -44,7 +44,7 @@ const SearchFilters = ({ count, isSubscribed, initialOrientation, initialSort }:
         const updatedParams = {
             ...currentParams,
             orientation: value === "All" ? undefined : value,
-            sort: value2 === "Popular" ? undefined : value2,
+            sort: value2 === "popular" ? undefined : value2,
         };
 
         const url = queryString.stringifyUrl(
@@ -92,7 +92,7 @@ const SearchFilters = ({ count, isSubscribed, initialOrientation, initialSort }:
                             <SelectValue placeholder="sort" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="Popular">Popular</SelectItem>
+                            <SelectItem value="popular">Popular</SelectItem>
                             <SelectItem value="newest">Newest</SelectItem>
                             <SelectItem value="featured" className="" disabled={!isSubscribed}>
                                 <div className="inline-flex gap-2">

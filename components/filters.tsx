@@ -24,15 +24,15 @@ const HomeFilters = ({
     const router = useRouter();
     const pathName: any = usePathname()
 
-    const searchParams = typeof window !== "undefined" ? useSearchParams() : null; // Handle SSR
+    const searchParams = useSearchParams();
 
     // Initialize state from URL params or default props
     const [value, setValue] = useState(() => {
-        return searchParams?.get("orientation") || initialOrientation || "All";
+        return searchParams ? searchParams.get("orientation") || initialOrientation || "All" : "All";
     });
 
     const [value2, setValue2] = useState(() => {
-        return searchParams?.get("sort") || initialSort || "popular";
+        return searchParams ? searchParams.get("sort") || initialSort || "popular" : "popular";
     });
 
     useEffect(() => {
