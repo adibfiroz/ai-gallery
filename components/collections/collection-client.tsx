@@ -9,10 +9,12 @@ import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import { Button } from 'antd'
 import { SyncLoader } from 'react-spinners'
+import { useAppDispatch } from '@/hooks/store'
+import { setTotalImages } from '@/store/slices/totalImagesSlice'
 
 
 interface CollectionClientProps {
-    data: Image[]
+    data: Image[] | any
     initialTake: number
     collectionId: string
     cName?: string
@@ -25,10 +27,11 @@ const CollectionClient = ({
     data, isSubscribed, cName, collectionId, currentUser, totalCount, initialTake
 }: CollectionClientProps) => {
 
-    const [images, setImages] = useState(data);
+    const [images, setImages] = useState<Image[]>(data);
     const [page, setPage] = useState(2);
     const [hasMoreImage, setHasMoreImage] = useState<any>(true)
     const [loading, setLoading] = useState(false)
+    const dispatch = useAppDispatch();
 
     const handleLoadMore = async () => {
         setLoading(true)
@@ -38,7 +41,7 @@ const CollectionClient = ({
                 collectionId: collectionId
             });
 
-            const filteredNewImages = response.moreData?.filter(newImage => {
+            const filteredNewImages: any = response.moreData?.filter(newImage => {
                 return !images.some(existingImage => existingImage.id === newImage.id);
             });
 
@@ -57,6 +60,10 @@ const CollectionClient = ({
     useEffect(() => {
         setImages(data)
     }, [data])
+
+    useEffect(() => {
+        dispatch(setTotalImages(images));
+    }, [images, dispatch]);
 
     const formattedName = currentUser?.name?.replace(/\s+/g, '-').toLowerCase();
 

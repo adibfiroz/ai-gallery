@@ -25,13 +25,10 @@ const useFavorite = ({ imageId, currentUser }: IUseFavorite) => {
   }, [currentUser, imageId]);
 
   const toggleFavorite = useCallback(
-    async (e: React.MouseEvent<HTMLDivElement>) => {
+    async (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
+      e.preventDefault();
 
-      if (!currentUser) {
-        loginModal.onOpen();
-        return false;
-      }
       setisLoading(true);
       try {
         let request;

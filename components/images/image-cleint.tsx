@@ -1,32 +1,65 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import ImageCard from './image-card'
 import { Image } from '@prisma/client'
 import { SafeUser } from '@/app/types'
 import { getMoreImages } from '@/app/actions/get-more-data'
 import { Button } from 'antd'
-import { SyncLoader } from 'react-spinners'
-
+import { CircleLoader, SyncLoader } from 'react-spinners'
+import { useAppDispatch, useAppSelector } from '@/hooks/store'
+import { fetchInitialImages } from '@/store/slices/initialImagesSlice'
+import { setTotalImages } from '@/store/slices/totalImagesSlice'
 interface ImageCleintProps {
-    data: Image[]
     decodedString?: string
     orientation?: string
     sort?: string
-    initialTake: number
     currentUser?: SafeUser | null
     isSubscribed: boolean
 }
 
+const ImageCleint = ({
+    orientation,
+    isSubscribed,
+    currentUser,
+    sort,
+    decodedString,
+}: ImageCleintProps) => {
+    const dispatch = useAppDispatch();
 
-const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decodedString, initialTake }: ImageCleintProps) => {
-    const [images, setImages] = useState<Image[]>([]);
+    const { data, loading: isInitailLoading } = useAppSelector((state) => state.initialImages);
+
+    const [images, setImages] = useState<Image[]>(data);
     const [page, setPage] = useState(2);
     const [hasMoreImage, setHasMoreImage] = useState<any>(true)
-    const [loading, setLoading] = useState(false)
+    const [loadingMore, setLoadingMore] = useState(false)
+
+    const options = {
+        orientation,
+        sort,
+        page: 1,
+        searchItem: decodedString
+    }
+
+    useEffect(() => {
+        dispatch(fetchInitialImages(options))
+    }, [orientation, sort])
+
+    const capitalizeString = (str: string) => {
+        if (!str) {
+            return str;
+        }
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    };
+
+    useEffect(() => {
+        if (decodedString && typeof window !== 'undefined') {
+            document.title = `${capitalizeString(decodedString)} AI Images, Download Best of ${capitalizeString(decodedString)} Images`;
+        }
+    })
 
     const handleLoadMore = async () => {
-        setLoading(true)
+        setLoadingMore(true)
         try {
             const response = await getMoreImages({
                 orientation: orientation,
@@ -35,19 +68,19 @@ const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decod
                 searchItem: decodedString
             });
 
-            const filteredNewImages = response.data?.filter(newImage => {
+            const filteredNewImages: any = response.data?.filter(newImage => {
                 return !images?.some(existingImage => existingImage?.id === newImage.id);
             });
 
             setImages((prev) => [...prev, ...filteredNewImages]);
             setHasMoreImage(response?.hasMore)
             setPage((prev) => prev + 1)
-            setLoading(false)
+            setLoadingMore(false)
         } catch (error) {
-            setLoading(false)
+            setLoadingMore(false)
             console.error('Failed to load more images:', error);
         } finally {
-            setLoading(false)
+            setLoadingMore(false)
         }
     };
 
@@ -61,18 +94,31 @@ const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decod
         setPage(2)
     }, [orientation, sort])
 
+
+    useEffect(() => {
+        dispatch(setTotalImages(images));
+    }, [images]);
+
     return (
         <div>
-            <ImageCard
-                isSubscribed={isSubscribed}
-                currentUser={currentUser}
-                totalImages={images}
-                handleLoadMore={handleLoadMore}
-                data={images}
-                hasMoreImage={hasMoreImage}
-            />
+            {isInitailLoading ?
+                <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mt-4'>
+                    {Array.from({ length: 8 }, (_, index) => (
+                        <div key={index} className=' aspect-9/16 bg-gray-200 rounded-xl animate-pulse'></div>
+                    ))}
+                </div>
+                :
+                <ImageCard
+                    isSubscribed={isSubscribed}
+                    currentUser={currentUser}
+                    totalImages={images}
+                    handleLoadMore={handleLoadMore}
+                    data={images}
+                    hasMoreImage={hasMoreImage}
+                />
+            }
 
-            {loading &&
+            {loadingMore &&
                 <div className='flex justify-center my-4'>
                     <SyncLoader
                         size={20}
@@ -81,7 +127,7 @@ const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decod
                 </div>
             }
 
-            {(hasMoreImage && !loading) &&
+            {(hasMoreImage && !loadingMore && !isInitailLoading && data.length > 0) &&
                 <div className='text-center my-4' onClick={handleLoadMore}>
                     <Button className='text-lg h-auto py-2 px-6'>Load More</Button>
                 </div>

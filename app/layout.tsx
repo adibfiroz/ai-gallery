@@ -12,14 +12,16 @@ import Providers from "@/components/providers";
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "The best of AI images",
-  description: "Browse thousands of AI images",
+  title: "The Best of AI images",
+  description: "Browse Thousands of AI images",
 };
 
 export default async function RootLayout({
   children,
+  modal
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   const currentUser = await getCurrentUser()
 
@@ -32,6 +34,7 @@ export default async function RootLayout({
           <ModalProvider />
           <ToasterProvider />
           <Header currentUser={currentUser} />
+          {modal}
           {children}
           <Footer />
         </Providers>

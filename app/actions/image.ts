@@ -20,8 +20,9 @@ export interface IImageIdParams {
   imageId?: string;
 }
 
-interface IRelatedImageParams {
+export interface IRelatedImageParams {
   tags: string[];
+  imageId: string;
 }
 
 interface IImageCollectionIdParams {
@@ -73,7 +74,7 @@ export const getSingleImage = async (params: IImageIdParams) => {
 
 export const getRelatedImages = async (params: IRelatedImageParams) => {
   try {
-    const { tags } = params;
+    const { tags, imageId } = params;
 
     const images = await prismadb.image.findMany({
       where: {
@@ -91,7 +92,14 @@ export const getRelatedImages = async (params: IRelatedImageParams) => {
       },
     });
 
-    return images;
+    const filterSame = images.filter((same) => same.id !== imageId);
+
+    const data = filterSame.map((image) => ({
+      ...image,
+      createdAt: image.createdAt.toISOString(),
+    }));
+
+    return data;
   } catch (error: any) {
     return null;
   }
