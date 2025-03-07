@@ -24,23 +24,21 @@ import { fetchSingleImage } from '@/store/slices/imageSlice';
 import Masonry from 'react-masonry-css';
 import { fetchCurrentUser } from '@/store/slices/userSlice';
 import { fetchRelatedImages } from '@/store/slices/relatedImagesSlice';
-import Link from 'next/link';
 
-interface ImageModalProps {
+interface SingleimageViewProps {
     imageId: string;
     data: Image | any
     isSubscribed: boolean
 }
 
-const ImageModal = ({
+
+const SingleimageView = ({
     imageId,
     isSubscribed,
     data: serverData,
-}: ImageModalProps) => {
+}: SingleimageViewProps) => {
     const [open2, setOpen2] = useState(false)
     const [copyLink, setCopyLink] = useState(false);
-    const [modal1Open, setModal1Open] = useState(true);
-    const [heart, setHeart] = useState(true);
 
     const loginModal = useLoginModal()
     const router = useRouter()
@@ -51,10 +49,7 @@ const ImageModal = ({
     const { data, loading } = useAppSelector((state) => state.image);
     const { count } = useAppSelector((state) => state.freeDownload);
     const { data: currentUser } = useAppSelector((state) => state.currentUser);
-    const { images } = useAppSelector((state) => state.totalImages);
     const { data: relatedImages, loading: isLoading } = useAppSelector((state) => state.relatedImages);
-
-    const [currentIndex, setCurrentIndex] = useState(images?.findIndex(img => img.id === imageId));
 
     const currentImage = data;
 
@@ -74,11 +69,11 @@ const ImageModal = ({
         if (currentUser) {
             dispatch(fetchCollections());
         }
-    }, [dispatch]);
+    }, [currentUser, dispatch]);
 
     useEffect(() => {
         if (currentImage?.tags) {
-            dispatch(fetchRelatedImages({ tags: currentImage.tags, imageId }));
+            dispatch(fetchRelatedImages({ tags: serverData.tags, imageId }));
         }
     }, [currentImage?.tags]);
 
@@ -98,7 +93,6 @@ const ImageModal = ({
     const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>, item: Image) => {
         e.stopPropagation()
         if (!currentUser) {
-            router.back()
             loginModal.onOpen();
             return
         }
@@ -128,27 +122,6 @@ const ImageModal = ({
         setTimeout(() => setCopyLink(false), 3000);
     };
 
-    const left = async () => {
-        setCurrentIndex(prevIndex => {
-            if (prevIndex > 0) {
-                const newIndex = prevIndex - 1;
-                handleRoute(images[newIndex]?.id)
-                router.replace(`/image/${images[newIndex]?.id}`, { scroll: false })
-            }
-            return prevIndex;
-        });
-    };
-
-    const right = async () => {
-        setCurrentIndex(prevIndex => {
-            if (prevIndex < images.length - 1) {
-                const newIndex = prevIndex + 1;
-                router.replace(`/image/${images[newIndex]?.id}`, { scroll: false })
-            }
-            return prevIndex;
-        });
-    };
-
     useEffect(() => {
         if (typeof window !== 'undefined' && currentImage) {
             document.title = `${currentImage.caption}`;
@@ -171,33 +144,15 @@ const ImageModal = ({
         },
     ];
 
-    const handleCloseModal = () => {
-        setHeart(false)
-        router.back()
-    }
-
     useEffect(() => {
-        if (pathname && pathname.startsWith("/image")) {
-            setModal1Open(true)
-        } else {
-            setModal1Open(false)
+        if (pathname) {
+            sessionStorage.setItem("prevRoute", pathname)
         }
-    }, [pathname])
+    }, [])
 
-    if (!modal1Open) return null
 
     return (
-        <Modal
-            open={true}
-            onCancel={handleCloseModal}
-            width={1000}
-            centered
-            destroyOnClose={true}
-            cancelButtonProps={{ hidden: true }}
-            okButtonProps={{ hidden: true }}
-            transitionName=""
-            maskTransitionName=""
-            className=''>
+        <div>
             <div className=' relative h-full'>
                 {loading ?
                     <div className=' grid lg:grid-cols-3 '>
@@ -341,7 +296,6 @@ const ImageModal = ({
                                             <Download size={22} />
                                         </Button>
                                         <HeartButton
-                                            heart={heart}
                                             imageId={item.id}
                                             currentUser={currentUser}
                                         />
@@ -357,7 +311,6 @@ const ImageModal = ({
                                                 Download
                                             </Button>
                                             <HeartButton
-                                                heart={heart}
                                                 imageId={item.id}
                                                 currentUser={currentUser}
                                             />
@@ -376,18 +329,6 @@ const ImageModal = ({
                 </div>
 
             </div>
-
-            {(data && currentIndex > 0) &&
-                <button onClick={left} className=" p-2 group/item cursor-pointer fixed top-[45%] left-5 xl:left-16 text-white z-50 bg-black border border-gray-500 rounded-full ">
-                    <Play size={18} className='fill-white transition-all duration-200 rotate-180 group-hover/item:text-[#00ffdf] group-hover/item:fill-[#00ffdf]' />
-                </button>
-            }
-
-            {(data && currentIndex < images.length - 1) &&
-                <button onClick={right} className="p-2 group/item cursor-pointer text-white fixed top-[45%] right-5 xl:right-16 z-50 bg-black rounded-full border border-gray-500">
-                    <Play size={18} className='fill-white transition-all duration-200 group-hover/item:text-[#00ffdf] group-hover/item:fill-[#00ffdf] ' />
-                </button>
-            }
 
             {currentImage?.Pro && <img src="/crown.png" width={30} height={30} className=' absolute left-4 top-4 z-10' alt="proImage" />}
 
@@ -416,15 +357,15 @@ const ImageModal = ({
                     </div>
 
                     <div className='py-4'>
-                        <div onClick={() => { setModal1Open(false); router.replace(`/profile/${formattedName}/collections`) }} className='flex items-center gap-2 bg-black text-white rounded-xl py-4 px-6 cursor-pointer hover:opacity-85 w-fit mx-auto text-lg' >
+                        <div onClick={() => window.location.href = `/profile/${formattedName}/collections`} className='flex items-center gap-2 bg-black text-white rounded-xl py-4 px-6 cursor-pointer hover:opacity-85 w-fit mx-auto text-lg' >
                             Collections
                             <ArrowRight />
                         </div>
                     </div>
                 </Modal>
             }
-        </Modal>
+        </div>
     )
 }
 
-export default ImageModal
+export default SingleimageView

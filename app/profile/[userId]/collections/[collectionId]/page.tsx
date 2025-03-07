@@ -52,7 +52,11 @@ const SingleCollectionPage = async ({
         }),
     ]);
 
-    const initialData = data && data?.images || []
+    const safeImages = data?.images.map((image) => ({
+        ...image,
+        createdAt: image.createdAt.toISOString(),
+    }));
+
     const moreData = count && count?.images || []
 
     return (
@@ -62,7 +66,7 @@ const SingleCollectionPage = async ({
                 cName={data?.name}
                 isSubscribed={isSubscribed}
                 currentUser={currentUser}
-                data={initialData}
+                data={safeImages ?? []}
                 totalCount={moreData}
                 initialTake={take}
             />

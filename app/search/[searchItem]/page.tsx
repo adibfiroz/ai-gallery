@@ -80,9 +80,7 @@ const SearchPage = async ({
                 isSubscribed={isSubscribed}
             />
             <ImageCleint
-                data={data}
                 sort={sort}
-                initialTake={take}
                 orientation={orientation}
                 currentUser={currentUser}
                 isSubscribed={isSubscribed}

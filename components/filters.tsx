@@ -36,7 +36,7 @@ const HomeFilters = ({
     });
 
     useEffect(() => {
-        if (!searchParams) return; // Prevent running on SSR
+        if (!searchParams || pathName.startsWith("/image/")) return; // Prevent running on SSR
 
         const currentParams = queryString.parse(searchParams.toString());
 
@@ -51,7 +51,7 @@ const HomeFilters = ({
             { skipNull: true }
         );
 
-        router.push(url.toLowerCase());
+        router.replace(url.toLowerCase(), { scroll: false });
     }, [value, value2, router, pathName]);
 
     return (
