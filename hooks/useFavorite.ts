@@ -25,7 +25,7 @@ const useFavorite = ({ imageId, currentUser }: IUseFavorite) => {
   }, [currentUser, imageId]);
 
   const toggleFavorite = useCallback(
-    async (e: React.MouseEvent<HTMLDivElement>) => {
+    async (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
 
       if (!currentUser) {

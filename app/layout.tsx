@@ -8,11 +8,12 @@ import { getCurrentUser } from "./actions/getCurrentUser";
 import { ToasterProvider } from "@/components/toaster-provider";
 import { dailyLimit } from "./actions/user";
 import Providers from "@/components/providers";
+import LoadingBar from "@/components/loadingBar";
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "The best of AI images",
+  title: "The Best of AI images",
   description: "Browse thousands of AI images",
 };
 
@@ -28,6 +29,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <LoadingBar />
         <Providers>
           <ModalProvider />
           <ToasterProvider />

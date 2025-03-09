@@ -1,15 +1,14 @@
 "use client"
 
-import { Download, Heart, X } from 'lucide-react'
+import { Download, X } from 'lucide-react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import Masonry from 'react-masonry-css'
 import ImageModal from './image-modal'
-import { Collection, Image, Orients } from '@prisma/client'
 var FileSaver = require('file-saver');
 import InfiniteScroll from "react-infinite-scroll-component";
 import HeartButton from '../HeartButton'
-import { SafeUser } from '@/app/types'
+import { SafeImage, SafeUser } from '@/app/types'
 import { increamentDownloads, increamentViewsCount } from '@/app/actions/image'
 import { useLoginModal } from '@/hooks/user-login-modal'
 import { increaseFreeDownloadLimit } from '@/lib/api-limit'
@@ -20,24 +19,23 @@ import { MAX_DOWNLOAD_LIMIT } from '@/constants'
 import { useAppDispatch, useAppSelector } from '@/hooks/store'
 import { fetchFreeDownloadCount } from '@/store/slices/freeDownloadSlice'
 import { Image as AntImage } from 'antd';
-import { fetchCollections } from '@/store/slices/collectionSlice'
 import { fetchCurrentUser } from '@/store/slices/userSlice'
 import { fetchSingleImage } from '@/store/slices/imageSlice'
+import { setSingleImage, setTotalImages } from '@/store/slices/modalImagesSlice'
 
 interface ImageCardProps {
-    data: Image[]
-    totalImages: Image[]
+    data: SafeImage[] | any
+    totalImages: SafeImage[] | any
     handleLoadMore: () => void
     currentUser?: SafeUser | null
     isSubscribed: boolean
-    relatedImages?: Image[]
+    relatedImages?: SafeImage[]
     hasMoreImage: boolean
 }
 
 
 const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribed, handleLoadMore }: ImageCardProps) => {
     const [open, setOpen] = useState(false)
-    const [selectedItems, setSelectedItems] = useState<Image | undefined>();
     const [filterImage, setFilterImage] = useState(data)
     const loginModal = useLoginModal()
     const pathName = usePathname();
@@ -59,19 +57,20 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
     const getCollectionId = params?.collectionId as string
 
     const handleImageModal = () => {
-        setSelectedItems(undefined)
         setOpen(false)
     }
 
-    const handleData = async (item: Image) => {
-        setSelectedItems(item)
+    const handleData = async (item: SafeImage) => {
+        dispatch(setTotalImages(data));
+        dispatch(setSingleImage(item))
         dispatch(fetchSingleImage({ imageId: item.id }))
         setOpen(true)
         await increamentViewsCount({ imageId: item.id })
     };
 
-    const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>, item: Image) => {
+    const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>, item: SafeImage) => {
         e.stopPropagation();
+        e.preventDefault()
         if (!currentUser) {
             loginModal.onOpen();
             return
@@ -101,7 +100,7 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
     const handleRemove = async (e: React.MouseEvent<HTMLButtonElement>, imageId: string) => {
         e.stopPropagation();
         try {
-            const filter = filterImage.filter(img => img.id !== imageId);
+            const filter = filterImage.filter((img: any) => img.id !== imageId);
             setFilterImage(filter)
             await removeImagetoCollection({ imageId, collectionId: getCollectionId });
         } catch (error) {
@@ -135,7 +134,7 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
                     }}
                     className="my-masonry-grid mt-5"
                     columnClassName="my-masonry-grid_column">
-                    {filterImage?.map((item: Image) => (
+                    {filterImage?.map((item: any) => (
                         <div onClick={() => handleData(item)} key={item.id} className=' relative antImgBlock group/item select-none overflow-hidden cursor-pointer'>
                             {(pathName === `/profile/${formattedName}/collections/${getCollectionId}` && !relatedImages) &&
                                 <Button onClick={(e) => handleRemove(e, item.id)} className='bg-white md:opacity-0 md:group-hover/item:opacity-100 rounded-full p-0 w-9 text-[#ff0000] hover:bg-gray-200 absolute right-4 top-4 z-20'>
@@ -182,8 +181,6 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
             <ImageModal
                 isSubscribed={isSubscribed}
                 currentUser={currentUser}
-                totalImages={totalImages}
-                data={selectedItems}
                 open={open}
                 count={count}
                 handleImageModal={handleImageModal}

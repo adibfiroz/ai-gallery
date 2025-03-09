@@ -2,14 +2,16 @@
 
 import React, { useEffect, useState } from 'react'
 import ImageCard from './image-card'
-import { Image } from '@prisma/client'
-import { SafeUser } from '@/app/types'
+import { SafeImage, SafeUser } from '@/app/types'
 import { getMoreImages } from '@/app/actions/get-more-data'
 import { Button } from 'antd'
 import { SyncLoader } from 'react-spinners'
+import { useAppDispatch } from '@/hooks/store'
+import { usePathname } from 'next/navigation'
+import { setTotalImages } from '@/store/slices/modalImagesSlice'
 
 interface ImageCleintProps {
-    data: Image[]
+    data: SafeImage[]
     decodedString?: string
     orientation?: string
     sort?: string
@@ -20,10 +22,13 @@ interface ImageCleintProps {
 
 
 const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decodedString, initialTake }: ImageCleintProps) => {
-    const [images, setImages] = useState<Image[]>([]);
+    const [images, setImages] = useState<SafeImage[]>([]);
     const [page, setPage] = useState(2);
     const [hasMoreImage, setHasMoreImage] = useState<any>(true)
     const [loading, setLoading] = useState(false)
+    const dispatch = useAppDispatch();
+    const pathName = usePathname()
+
 
     const handleLoadMore = async () => {
         setLoading(true)
@@ -35,7 +40,7 @@ const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decod
                 searchItem: decodedString
             });
 
-            const filteredNewImages = response.data?.filter(newImage => {
+            const filteredNewImages: any = response.data?.filter(newImage => {
                 return !images?.some(existingImage => existingImage?.id === newImage.id);
             });
 
@@ -55,11 +60,14 @@ const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decod
         setImages(data)
     }, [data])
 
-
     useEffect(() => {
         setHasMoreImage(true)
         setPage(2)
     }, [orientation, sort])
+
+    useEffect(() => {
+        dispatch(setTotalImages(images));
+    }, [images]);
 
     return (
         <div>
@@ -81,7 +89,7 @@ const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decod
                 </div>
             }
 
-            {(hasMoreImage && !loading) &&
+            {(hasMoreImage && !loading && data.length > 0) &&
                 <div className='text-center my-4' onClick={handleLoadMore}>
                     <Button className='text-lg h-auto py-2 px-6'>Load More</Button>
                 </div>

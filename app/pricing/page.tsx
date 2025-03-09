@@ -6,6 +6,12 @@ import { CheckIcon } from 'lucide-react'
 import React from 'react'
 import { getCurrentUser } from '../actions/getCurrentUser'
 import { checkSubscription } from '@/lib/subscription'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: "Pricing - Pixsider",
+};
+
 
 const tiers = [
     {

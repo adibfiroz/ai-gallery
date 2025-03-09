@@ -39,10 +39,15 @@ const ProfilePage = async () => {
         }),
     ]);
 
+    const safeData = data.map((image) => ({
+        ...image,
+        createdAt: image.createdAt.toISOString(),
+    }));
+
     return (
         <div className='mt-8'>
             <FavouriteClient
-                data={data}
+                data={safeData}
                 initialTake={take}
                 currentUser={currentUser}
                 isSubscribed={isSubscribed}

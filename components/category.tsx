@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from "framer-motion"
+import { useParams } from 'next/navigation';
 
 interface SliderItemProps {
     label: string;
@@ -12,7 +13,7 @@ interface SliderItemProps {
 
 const SliderItem: React.FC<SliderItemProps> = ({ label }) => {
     return (
-        <Link href={`/search/${label}`} className={cn("px-6 py-3 bg-white whitespace-nowrap border rounded-md shadow-sm hover:bg-teal-500/20 hover:text-teal-800 cursor-pointer transition-all duration-300 lowercase text-[16px]")}>
+        <Link href={`/search/${label}`} className={cn("px-6 py-3 bg-white whitespace-nowrap border rounded-md shadow-sm hover:bg-teal-500/20 hover:text-teal-800 hover:border-teal-500/20 cursor-pointer transition-all duration-300 lowercase text-[16px]")}>
             {label}
         </Link>
     );
@@ -29,6 +30,9 @@ const Category = ({ category }: CategoryProps) => {
     const sliderRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(true);
+    const params = useParams() as Record<string, string>;
+
+    const decodedString = decodeURIComponent(params.searchItem);
 
     // Handle scroll positions
     const handleScroll = () => {
@@ -76,9 +80,13 @@ const Category = ({ category }: CategoryProps) => {
                     )}
 
                     <div ref={sliderRef} className="flex space-x-3 overflow-x-scroll scrollHide">
-                        {items?.map((item, index) => (
-                            <SliderItem key={index} label={item} />
-                        ))}
+                        {items
+                            .filter(
+                                (option) =>
+                                    option !== decodedString
+                            ).map((item, index) => (
+                                <SliderItem key={index} label={item} />
+                            ))}
                     </div>
 
                     {canScrollRight && (

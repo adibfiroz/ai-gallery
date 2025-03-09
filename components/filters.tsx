@@ -51,7 +51,7 @@ const HomeFilters = ({
             { skipNull: true }
         );
 
-        router.push(url.toLowerCase());
+        router.push(url.toLowerCase(), { scroll: false });
     }, [value, value2, router, pathName]);
 
     return (

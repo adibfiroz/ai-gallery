@@ -52,6 +52,11 @@ const Home = async ({
     prismadb.image.count({ where: query, orderBy: orderByQuery }),
   ]);
 
+  const safeData = data.map((image) => ({
+    ...image,
+    createdAt: image.createdAt.toISOString(),
+  }));
+
   return (
     <Container>
       <HeaderBanner />
@@ -63,7 +68,7 @@ const Home = async ({
       <ImageCleint
         isSubscribed={isSubscribed}
         currentUser={currentUser}
-        data={data}
+        data={safeData}
         initialTake={take}
         orientation={orientation}
         sort={sort}

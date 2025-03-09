@@ -1,15 +1,16 @@
 "use client"
 
-import { SafeUser } from '@/app/types'
-import { Image } from '@prisma/client'
+import { SafeImage, SafeUser } from '@/app/types'
 import React, { useEffect, useState } from 'react'
 import ImageCard from '../images/image-card'
 import { getMoreFavoriteImages } from '@/app/actions/get-more-data'
 import { Button } from 'antd'
 import { SyncLoader } from 'react-spinners'
+import { useAppDispatch } from '@/hooks/store'
+import { setTotalImages } from '@/store/slices/modalImagesSlice'
 
 interface FavouriteClientProps {
-    data: Image[]
+    data: SafeImage[] | any
     currentUser?: SafeUser | null
     initialTake: number
     isSubscribed: boolean
@@ -21,10 +22,11 @@ const FavouriteClient = ({
     initialTake,
     isSubscribed,
 }: FavouriteClientProps) => {
-    const [images, setImages] = useState(data);
+    const [images, setImages] = useState<SafeImage[]>(data);
     const [page, setPage] = useState(2);
     const [hasMoreImage, setHasMoreImage] = useState<any>(true)
     const [loading, setLoading] = useState(false)
+    const dispatch = useAppDispatch();
 
     const handleLoadMore = async () => {
         setLoading(true)
@@ -33,7 +35,7 @@ const FavouriteClient = ({
                 page: page,
             });
 
-            const filteredNewImages = response.data?.filter(newImage => {
+            const filteredNewImages: any = response.data?.filter(newImage => {
                 return !images.some(existingImage => existingImage.id === newImage.id);
             });
 
@@ -52,6 +54,11 @@ const FavouriteClient = ({
     useEffect(() => {
         setImages(data)
     }, [data])
+
+    useEffect(() => {
+        dispatch(setTotalImages(images));
+    }, [images]);
+
 
     return (
         <div>

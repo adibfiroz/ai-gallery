@@ -47,7 +47,7 @@ export const getMoreImages = async (params: IImageParams) => {
         ? { views: "desc" }
         : undefined;
 
-    const data = await prismadb.image.findMany({
+    const images = await prismadb.image.findMany({
       where: query,
       orderBy: orderByClause,
       take: TAKE,
@@ -62,6 +62,10 @@ export const getMoreImages = async (params: IImageParams) => {
     const hasMore = page && page * TAKE < totalImages;
 
     // await new Promise((resolve) => setTimeout(resolve, 1000));
+    const data = images.map((image) => ({
+      ...image,
+      createdAt: image.createdAt.toISOString(),
+    }));
 
     return { data, hasMore };
   } catch (error: any) {
@@ -104,7 +108,11 @@ export const moreCollectionImages = async (params: ICollectionParams) => {
     });
 
     const hasMore = page && page * TAKE < totalImages;
-    const moreData = (data && data?.images) || [];
+
+    const moreData = data?.images.map((image) => ({
+      ...image,
+      createdAt: image.createdAt.toISOString(),
+    }));
 
     return { moreData, hasMore };
   } catch (error: any) {
@@ -150,7 +158,7 @@ export const getMoreFavoriteImages = async (params: IImageParams) => {
     const currentUser = await getCurrentUser();
     const { page } = params;
 
-    const data = await prismadb.image.findMany({
+    const images = await prismadb.image.findMany({
       where: {
         id: {
           in: currentUser?.favoriteIds || [], // ✅ No unnecessary spread
@@ -172,6 +180,11 @@ export const getMoreFavoriteImages = async (params: IImageParams) => {
     });
 
     const hasMore = page && page * TAKE < totalImages;
+
+    const data = images.map((image) => ({
+      ...image,
+      createdAt: image.createdAt.toISOString(),
+    }));
 
     return { data, hasMore };
   } catch (error: any) {
