@@ -6,13 +6,14 @@ import { Button } from '../ui/button';
 var FileSaver = require('file-saver');
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { cn } from '@/lib/utils';
-import { Collection, Image } from '@prisma/client';
+import { Collection, } from '@prisma/client';
+import { SafeImage, SafeUser } from '@/app/types';
 import HeartButton from '../HeartButton';
-import { getRelatedImages, getSingleImage, increamentDownloads, increamentViewsCount } from '@/app/actions/image';
+import { increamentDownloads, increamentViewsCount } from '@/app/actions/image';
 import { useLoginModal } from '@/hooks/user-login-modal';
 import toast from 'react-hot-toast';
 import { increaseFreeDownloadLimit } from '@/lib/api-limit';
-import { usePathname, useRouter } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import CollectionButton from '../collection-button';
 import { MAX_DOWNLOAD_LIMIT } from '@/constants';
 import Category from '../category';
@@ -22,63 +23,57 @@ import { useAppDispatch, useAppSelector } from '@/hooks/store';
 import { fetchCollections } from '@/store/slices/collectionSlice';
 import { fetchSingleImage } from '@/store/slices/imageSlice';
 import Masonry from 'react-masonry-css';
-import { fetchCurrentUser } from '@/store/slices/userSlice';
-import { fetchRelatedImages } from '@/store/slices/relatedImagesSlice';
+import { setSingleImage, setTotalImages } from '@/store/slices/modalImagesSlice';
+import { fetchRelatedImages } from '@/store/slices/relatedImageSlice';
+import { Inter } from 'next/font/google';
+import { capitalizeString } from '@/store';
 import Link from 'next/link';
+const inter = Inter({ subsets: ['latin'] })
 
 interface ImageModalProps {
-    imageId: string;
-    data: Image | any
+    open: boolean;
+    handleImageModal: () => void
+    currentUser?: SafeUser | null
     isSubscribed: boolean
+    count: number
 }
 
 const ImageModal = ({
-    imageId,
+    open,
+    handleImageModal,
+    currentUser,
     isSubscribed,
-    data: serverData,
+    count,
 }: ImageModalProps) => {
     const [open2, setOpen2] = useState(false)
     const [copyLink, setCopyLink] = useState(false);
-    const [modal1Open, setModal1Open] = useState(true);
-    const [heart, setHeart] = useState(true);
+    const selectedImage = useAppSelector((state) => state.modalImages.singleImage);
+    const totalImages = useAppSelector((state) => state.modalImages.totalImages);
+
+    const [currentIndex, setCurrentIndex] = useState(totalImages?.findIndex(img => img.id === selectedImage?.id));
 
     const loginModal = useLoginModal()
     const router = useRouter()
-    const pathname = usePathname()
+    const pathName = usePathname()
+    const params = useParams() as Record<string, string>;
+    const decodedString = decodeURIComponent(params.searchItem);
     const dispatch = useAppDispatch();
 
     const { data: collections } = useAppSelector((state) => state.collection);
-    const { data, loading } = useAppSelector((state) => state.image);
-    const { count } = useAppSelector((state) => state.freeDownload);
-    const { data: currentUser } = useAppSelector((state) => state.currentUser);
-    const { images } = useAppSelector((state) => state.totalImages);
+    const { data: singleImage, loading } = useAppSelector((state) => state.image);
     const { data: relatedImages, loading: isLoading } = useAppSelector((state) => state.relatedImages);
 
-    const [currentIndex, setCurrentIndex] = useState(images?.findIndex(img => img.id === imageId));
-
-    const currentImage = data;
-
-    useEffect(() => {
-        dispatch(fetchFreeDownloadCount());
-    }, [dispatch]);
-
-    useEffect(() => {
-        dispatch(fetchCurrentUser());
-    }, [dispatch]);
-
-    useEffect(() => {
-        dispatch(fetchSingleImage({ imageId: imageId }))
-    }, [imageId])
+    const currentImage = singleImage;
 
     useEffect(() => {
         if (currentUser) {
             dispatch(fetchCollections());
         }
-    }, [dispatch]);
+    }, [currentUser]);
 
     useEffect(() => {
         if (currentImage?.tags) {
-            dispatch(fetchRelatedImages({ tags: currentImage.tags, imageId }));
+            dispatch(fetchRelatedImages({ tags: currentImage.tags, imageId: selectedImage.id }));
         }
     }, [currentImage?.tags]);
 
@@ -90,15 +85,13 @@ const ImageModal = ({
         setOpen2(!open2)
     }
 
-    const handleRoute = async (id: string) => {
-        router.replace(`/image/${id}`, { scroll: false })
-        await increamentViewsCount({ imageId: id })
-    }
-
-    const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>, item: Image) => {
-        e.stopPropagation()
+    const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>, item: SafeImage) => {
+        e.stopPropagation();
+        e.preventDefault()
         if (!currentUser) {
-            router.back()
+            if (open) {
+                handleImageModal()
+            }
             loginModal.onOpen();
             return
         }
@@ -128,39 +121,37 @@ const ImageModal = ({
         setTimeout(() => setCopyLink(false), 3000);
     };
 
-    const left = async () => {
-        setCurrentIndex(prevIndex => {
-            if (prevIndex > 0) {
-                const newIndex = prevIndex - 1;
-                handleRoute(images[newIndex]?.id)
-                router.replace(`/image/${images[newIndex]?.id}`, { scroll: false })
-            }
-            return prevIndex;
-        });
+    const left = () => {
+        setCurrentIndex(prevIndex => Math.max(prevIndex - 1, 0));
     };
 
-    const right = async () => {
-        setCurrentIndex(prevIndex => {
-            if (prevIndex < images.length - 1) {
-                const newIndex = prevIndex + 1;
-                router.replace(`/image/${images[newIndex]?.id}`, { scroll: false })
-            }
-            return prevIndex;
-        });
+    const right = () => {
+        setCurrentIndex(prevIndex => Math.min(prevIndex + 1, totalImages.length - 1));
     };
+
 
     useEffect(() => {
-        if (typeof window !== 'undefined' && currentImage) {
-            document.title = `${currentImage.caption}`;
+        // Update currentIndex whenever a new item is selected
+        if (selectedImage) {
+            const newIndex = totalImages.findIndex((img) => img.id === selectedImage.id);
+            setCurrentIndex(newIndex);
         }
-    }, [data])
+    }, [selectedImage, totalImages]);
+
+    // Fetch new image when currentIndex changes
+    useEffect(() => {
+        if (currentIndex !== -1) {
+            modalScroll()
+            dispatch(fetchSingleImage({ imageId: totalImages[currentIndex]?.id }));
+        }
+    }, [currentIndex, dispatch, totalImages]);
 
     const formattedName = currentUser?.name?.replace(/\s+/g, '-').toLowerCase();
 
     const items: MenuProps['items'] = [
         {
             label: (
-                <CopyToClipboard text={`http://localhost:3000/${pathname}` || ""} onCopy={onCopyLink}>
+                <CopyToClipboard text={`${process.env.NEXT_PUBLIC_APP_URL}/image/${selectedImage?.id}` || ""} onCopy={onCopyLink}>
                     <div className='flex items-center gap-2'>
                         <Link2 size={18} />
                         copy link
@@ -171,40 +162,60 @@ const ImageModal = ({
         },
     ];
 
-    const handleCloseModal = () => {
-        setHeart(false)
-        router.back()
+
+    useEffect(() => {
+        if (currentImage?.tags) {
+            dispatch(fetchRelatedImages({ tags: currentImage.tags, imageId: selectedImage?.id }));
+        }
+    }, [currentImage?.tags]);
+
+
+    const handleData = async (item: SafeImage) => {
+        modalScroll()
+        dispatch(setTotalImages(relatedImages));
+        dispatch(setSingleImage(item))
+        dispatch(fetchSingleImage({ imageId: item.id }))
+        await increamentViewsCount({ imageId: item.id })
+    };
+
+    const modalScroll = () => {
+        const modalBody = document.querySelector(".ant-modal-wrap");
+        if (modalBody) {
+            modalBody.scrollTo({ top: 0, behavior: "smooth" });
+        }
     }
 
     useEffect(() => {
-        if (pathname && pathname.startsWith("/image")) {
-            setModal1Open(true)
-        } else {
-            setModal1Open(false)
+        if (open) {
+            document.title = `${singleImage?.caption}`;
+        } else if (pathName?.startsWith("/search")) {
+            document.title = `${capitalizeString(decodedString)} AI Images, Download Best of ${capitalizeString(decodedString)} Images`
+        } else if (pathName === "/") {
+            document.title = "The Best of AI Images"
+        } else if (pathName?.startsWith("/profile")) {
+            if (formattedName) {
+                document.title = formattedName
+            }
         }
-    }, [pathname])
-
-    if (!modal1Open) return null
+    }, [singleImage, open, pathName])
 
     return (
         <Modal
-            open={true}
-            onCancel={handleCloseModal}
+            open={open}
+            onCancel={handleImageModal}
             width={1000}
             centered
             destroyOnClose={true}
             cancelButtonProps={{ hidden: true }}
             okButtonProps={{ hidden: true }}
-            transitionName=""
-            maskTransitionName=""
             className=''>
-            <div className=' relative h-full'>
+            <div className={cn(' relative h-full', inter.className)}>
                 {loading ?
                     <div className=' grid lg:grid-cols-3 '>
                         <div className=' lg:col-span-2 p-4'>
                             <div className='rounded-md bg-gray-200 animate-pulse h-[80vh] max-w-md mx-auto'></div>
                         </div>
-                        <div className='p-4 mt-6'>
+                        <div className='p-4 mt-8'>
                             <div className='rounded-md bg-gray-200 animate-pulse h-[100px]'></div>
 
                             <div className='grid grid-cols-2 gap-5 mt-10'>
@@ -228,7 +239,7 @@ const ImageModal = ({
                             </div>
                             <div className=' h-full flex flex-col gap-y-5 justify-between'>
                                 <div className='p-4'>
-                                    <div>Caption</div>
+                                    <div>Prompt</div>
                                     <div className='bg-stone-600/5 w-full text-sm rounded-xl p-3 mt-3'>
                                         {currentImage?.caption}
                                     </div>
@@ -249,7 +260,7 @@ const ImageModal = ({
                                                     />
                                                 }
 
-                                                {serverData?.userlikeIds.length || 0}
+                                                {currentImage?.userlikeIds.length || 0}
 
                                             </div>
                                         </div>
@@ -296,7 +307,7 @@ const ImageModal = ({
                                             </a>
                                         </Dropdown>
                                     }
-                                    <Button onClick={(e) => handleDownload(e, data)} className={cn('bg-gradient-to-r rounded-full transition-all duration-300 from-teal-400 via-teal-500 h-10 gap-x-2  to-teal-600 hover:from-teal-500 hover:via-teal-600 hover:to-teal-700')}>
+                                    <Button onClick={(e) => handleDownload(e, selectedImage)} className={cn('bg-gradient-to-r rounded-full transition-all duration-300 from-teal-400 via-teal-500 h-10 gap-x-2  to-teal-600 hover:from-teal-500 hover:via-teal-600 hover:to-teal-700')}>
                                         <Download size={20} />
                                         Download
                                     </Button>
@@ -311,6 +322,13 @@ const ImageModal = ({
                     </div>
                 }
 
+                {loading &&
+                    <div className='flex gap-x-4 gap-4 px-4 '>
+                        {Array.from({ length: 4 }, (_, index) => (
+                            <div key={index} className=' w-32 h-10 rounded-lg bg-gray-200 animate-pulse'></div>
+                        ))}
+                    </div>
+                }
 
                 <div className='px-4 relative'>
                     {isLoading ?
@@ -332,8 +350,8 @@ const ImageModal = ({
                             }}
                             className="my-masonry-grid mt-4"
                             columnClassName="my-masonry-grid_column">
-                            {relatedImages?.map((item: Image) => (
-                                <div onClick={() => handleRoute(item.id)} key={item.id} className=' relative antImgBlock group/item select-none overflow-hidden cursor-pointer'>
+                            {relatedImages?.map((item: SafeImage) => (
+                                <div onClick={() => handleData(item)} key={item.id} className=' relative antImgBlock group/item select-none overflow-hidden cursor-pointer'>
                                     {item.Pro && <img src="/crown.png" width={25} height={25} className='md:hidden absolute left-3 top-3 z-10 shadow-lg' alt="proImage" />}
 
                                     <div className='md:hidden absolute z-10 p-3 flex justify-between bottom-0 left-0 right-0'>
@@ -341,9 +359,10 @@ const ImageModal = ({
                                             <Download size={22} />
                                         </Button>
                                         <HeartButton
-                                            heart={heart}
+                                            open={open}
                                             imageId={item.id}
                                             currentUser={currentUser}
+                                            handleImageModal={handleImageModal}
                                         />
                                     </div>
                                     <div
@@ -357,9 +376,10 @@ const ImageModal = ({
                                                 Download
                                             </Button>
                                             <HeartButton
-                                                heart={heart}
+                                                open={open}
                                                 imageId={item.id}
                                                 currentUser={currentUser}
+                                                handleImageModal={handleImageModal}
                                             />
                                         </div>
                                     </div>
@@ -374,16 +394,14 @@ const ImageModal = ({
                         </Masonry>
                     }
                 </div>
-
             </div>
 
-            {(data && currentIndex > 0) &&
+            {(selectedImage && currentIndex > 0) &&
                 <button onClick={left} className=" p-2 group/item cursor-pointer fixed top-[45%] left-5 xl:left-16 text-white z-50 bg-black border border-gray-500 rounded-full ">
                     <Play size={18} className='fill-white transition-all duration-200 rotate-180 group-hover/item:text-[#00ffdf] group-hover/item:fill-[#00ffdf]' />
                 </button>
             }
-
-            {(data && currentIndex < images.length - 1) &&
+            {(selectedImage && currentIndex < totalImages.length - 1) &&
                 <button onClick={right} className="p-2 group/item cursor-pointer text-white fixed top-[45%] right-5 xl:right-16 z-50 bg-black rounded-full border border-gray-500">
                     <Play size={18} className='fill-white transition-all duration-200 group-hover/item:text-[#00ffdf] group-hover/item:fill-[#00ffdf] ' />
                 </button>
@@ -403,7 +421,7 @@ const ImageModal = ({
                     <div className='flex justify-between p-4'>
                         <div className='text-2xl text-[#384261] font-semibold text-center'>Save to Collection</div>
                     </div>
-                    <div className='max-h-[50vh] bg-gray-100 overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
+                    <div className='max-h-[50vh] bg-teal-500/5 overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
                         {collections?.map((item: Collection) => (
                             <div key={item.id}>
                                 <CollectionButton
@@ -416,10 +434,10 @@ const ImageModal = ({
                     </div>
 
                     <div className='py-4'>
-                        <div onClick={() => { setModal1Open(false); router.replace(`/profile/${formattedName}/collections`) }} className='flex items-center gap-2 bg-black text-white rounded-xl py-4 px-6 cursor-pointer hover:opacity-85 w-fit mx-auto text-lg' >
+                        <Link href={`/profile/${formattedName}/collections`} className='flex items-center gap-2 bg-black text-white rounded-xl py-4 px-6 cursor-pointer hover:opacity-85 w-fit mx-auto text-lg' >
                             Collections
                             <ArrowRight />
-                        </div>
+                        </Link>
                     </div>
                 </Modal>
             }

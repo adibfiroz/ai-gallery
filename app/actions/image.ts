@@ -61,7 +61,7 @@ export const getSingleImage = async (params: IImageIdParams) => {
       return null;
     }
 
-    // await new Promise((resolve) => setTimeout(resolve, 1000));
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
 
     return {
       ...image,

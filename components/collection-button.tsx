@@ -39,7 +39,7 @@ const CollectionButton: React.FC<CollectionButtonProps> = ({
     }
 
     return (
-        <div className={cn(' rounded-lg flex items-center justify-between bg-stone-200 border border-stone-900/10 pr-2 gap-x-4', inter.className)}>
+        <div className={cn(' rounded-lg flex items-center justify-between bg-gray-100 shadow-md border border-stone-900/10 pr-2 gap-x-4', inter.className)}>
             <div className="flex items-center truncate pl-4">
                 {hasFavorited ?
                     <Button className='p-0 shadow-none h-auto bg-transparent rounded-full hover:bg-transparent mt-1'>

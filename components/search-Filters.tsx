@@ -52,7 +52,7 @@ const SearchFilters = ({ count, isSubscribed, initialOrientation, initialSort }:
             { skipNull: true }
         );
 
-        router.replace(url.toLowerCase(), { scroll: false });
+        router.push(url.toLowerCase(), { scroll: false });
     }, [value, value2, router, pathName]);
 
     return (

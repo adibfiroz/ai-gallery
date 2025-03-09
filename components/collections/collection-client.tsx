@@ -1,7 +1,6 @@
 "use client"
 
-import { SafeUser } from '@/app/types'
-import { Collection, Image } from '@prisma/client'
+import { SafeImage, SafeUser } from '@/app/types'
 import React, { useEffect, useState } from 'react'
 import ImageCard from '../images/image-card'
 import { moreCollectionImages } from '@/app/actions/get-more-data'
@@ -10,31 +9,31 @@ import { ChevronRight } from 'lucide-react'
 import { Button } from 'antd'
 import { SyncLoader } from 'react-spinners'
 import { useAppDispatch } from '@/hooks/store'
-import { setTotalImages } from '@/store/slices/totalImagesSlice'
+import { setTotalImages } from '@/store/slices/modalImagesSlice'
 
 
 interface CollectionClientProps {
-    data: Image[] | any
-    initialTake: number
+    data: SafeImage[]
     collectionId: string
     cName?: string
-    totalCount: Image[]
+    totalCount: number
     currentUser?: SafeUser | null
     isSubscribed: boolean
 }
 
 const CollectionClient = ({
-    data, isSubscribed, cName, collectionId, currentUser, totalCount, initialTake
+    data, isSubscribed, cName, collectionId, currentUser, totalCount
 }: CollectionClientProps) => {
 
-    const [images, setImages] = useState<Image[]>(data);
+    const [images, setImages] = useState<SafeImage[]>(data);
     const [page, setPage] = useState(2);
     const [hasMoreImage, setHasMoreImage] = useState<any>(true)
-    const [loading, setLoading] = useState(false)
+    const [loadingMore, setLoadingMore] = useState(false)
+
     const dispatch = useAppDispatch();
 
     const handleLoadMore = async () => {
-        setLoading(true)
+        setLoadingMore(true)
         try {
             const response = await moreCollectionImages({
                 page: page,
@@ -48,12 +47,12 @@ const CollectionClient = ({
             setImages((prev) => [...prev, ...filteredNewImages]);
             setHasMoreImage(response?.hasMore)
             setPage((prev) => prev + 1)
-            setLoading(false)
+            setLoadingMore(false)
         } catch (error) {
-            setLoading(false)
+            setLoadingMore(false)
             console.error('Failed to load more images:', error);
         } finally {
-            setLoading(false)
+            setLoadingMore(false)
         }
     };
 
@@ -63,7 +62,8 @@ const CollectionClient = ({
 
     useEffect(() => {
         dispatch(setTotalImages(images));
-    }, [images, dispatch]);
+    }, [images]);
+
 
     const formattedName = currentUser?.name?.replace(/\s+/g, '-').toLowerCase();
 
@@ -76,7 +76,7 @@ const CollectionClient = ({
                     <div className=' whitespace-nowrap'>{cName}</div>
                 </div>
                 <div className='whitespace-nowrap'>
-                    {totalCount.length} /
+                    {totalCount} /
                     images
                 </div>
             </div>
@@ -89,7 +89,7 @@ const CollectionClient = ({
                 hasMoreImage={hasMoreImage}
             />
 
-            {loading &&
+            {loadingMore &&
                 <div className='flex justify-center my-4'>
                     <SyncLoader
                         size={20}
@@ -98,7 +98,7 @@ const CollectionClient = ({
                 </div>
             }
 
-            {(hasMoreImage && !loading) &&
+            {(hasMoreImage && !loadingMore) &&
                 <div className='text-center my-4' onClick={handleLoadMore}>
                     <Button className='text-lg h-auto py-2 px-6'>Load More</Button>
                 </div>

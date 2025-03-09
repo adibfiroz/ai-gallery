@@ -19,7 +19,6 @@ const SingleImagePage = async ({
             <Container>
                 <SingleimageView
                     isSubscribed={isSubscribed}
-                    imageId={imageId}
                     data={image}
                 />
             </Container>

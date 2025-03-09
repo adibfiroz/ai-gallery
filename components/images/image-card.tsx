@@ -1,14 +1,14 @@
 "use client"
 
 import { Download, X } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import Masonry from 'react-masonry-css'
-import { Image } from '@prisma/client'
+import ImageModal from './image-modal'
 var FileSaver = require('file-saver');
 import InfiniteScroll from "react-infinite-scroll-component";
 import HeartButton from '../HeartButton'
-import { SafeUser } from '@/app/types'
+import { SafeImage, SafeUser } from '@/app/types'
 import { increamentDownloads, increamentViewsCount } from '@/app/actions/image'
 import { useLoginModal } from '@/hooks/user-login-modal'
 import { increaseFreeDownloadLimit } from '@/lib/api-limit'
@@ -20,20 +20,22 @@ import { useAppDispatch, useAppSelector } from '@/hooks/store'
 import { fetchFreeDownloadCount } from '@/store/slices/freeDownloadSlice'
 import { Image as AntImage } from 'antd';
 import { fetchCurrentUser } from '@/store/slices/userSlice'
-import Link from 'next/link'
+import { fetchSingleImage } from '@/store/slices/imageSlice'
+import { setSingleImage, setTotalImages } from '@/store/slices/modalImagesSlice'
 
 interface ImageCardProps {
-    data: Image[]
-    totalImages: Image[]
+    data: SafeImage[] | any
+    totalImages: SafeImage[] | any
     handleLoadMore: () => void
     currentUser?: SafeUser | null
     isSubscribed: boolean
-    relatedImages?: Image[]
+    relatedImages?: SafeImage[]
     hasMoreImage: boolean
 }
 
 
 const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribed, handleLoadMore }: ImageCardProps) => {
+    const [open, setOpen] = useState(false)
     const [filterImage, setFilterImage] = useState(data)
     const loginModal = useLoginModal()
     const pathName = usePathname();
@@ -54,12 +56,21 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
 
     const getCollectionId = params?.collectionId as string
 
-    const handleData = async (item: Image) => {
+    const handleImageModal = () => {
+        setOpen(false)
+    }
+
+    const handleData = async (item: SafeImage) => {
+        dispatch(setTotalImages(data));
+        dispatch(setSingleImage(item))
+        dispatch(fetchSingleImage({ imageId: item.id }))
+        setOpen(true)
         await increamentViewsCount({ imageId: item.id })
     };
 
-    const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>, item: Image) => {
-        e.preventDefault();
+    const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>, item: SafeImage) => {
+        e.stopPropagation();
+        e.preventDefault()
         if (!currentUser) {
             loginModal.onOpen();
             return
@@ -90,7 +101,7 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
         e.stopPropagation();
         e.preventDefault();
         try {
-            const filter = filterImage.filter(img => img.id !== imageId);
+            const filter = filterImage.filter((img: any) => img.id !== imageId);
             setFilterImage(filter)
             await removeImagetoCollection({ imageId, collectionId: getCollectionId });
         } catch (error) {
@@ -123,53 +134,61 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
                     }}
                     className="my-masonry-grid mt-4"
                     columnClassName="my-masonry-grid_column">
-                    {filterImage?.map((item: Image) => (
+                    {filterImage?.map((item: any) => (
                         <div onClick={() => handleData(item)} key={item.id} className=' relative antImgBlock group/item select-none overflow-hidden cursor-pointer'>
-                            <Link href={`/image/${item.id}`} scroll={false}>
-                                {(pathName === `/profile/${formattedName}/collections/${getCollectionId}` && !relatedImages) &&
-                                    <Button onClick={(e) => handleRemove(e, item.id)} className='bg-white md:opacity-0 md:group-hover/item:opacity-100 rounded-full p-0 w-9 text-[#ff0000] hover:bg-gray-200 absolute right-3 top-3 z-20'>
-                                        <X />
-                                    </Button>
-                                }
+                            {(pathName === `/profile/${formattedName}/collections/${getCollectionId}` && !relatedImages) &&
+                                <Button onClick={(e) => handleRemove(e, item.id)} className='bg-white md:opacity-0 md:group-hover/item:opacity-100 rounded-full p-0 w-9 text-[#ff0000] hover:bg-gray-200 absolute right-3 top-3 z-20'>
+                                    <X />
+                                </Button>
+                            }
 
-                                {item.Pro && <img src="/crown.png" width={25} height={25} className='md:hidden absolute left-3 top-3 z-10 shadow-lg' alt="proImage" />}
+                            {item.Pro && <img src="/crown.png" width={25} height={25} className='md:hidden absolute left-3 top-3 z-10 shadow-lg' alt="proImage" />}
 
-                                <div className='md:hidden absolute z-10 p-3 flex justify-between bottom-0 left-0 right-0'>
-                                    <Button onClick={(e) => handleDownload(e, item)} className='rounded-full transition-all duration-300 bg-transparent shadow-2xl backdrop-blur-md p-0 size-10 to-teal-700'>
-                                        <Download size={22} />
+                            <div className='md:hidden absolute z-10 p-3 flex justify-between bottom-0 left-0 right-0'>
+                                <Button onClick={(e) => handleDownload(e, item)} className='rounded-full transition-all duration-300 bg-transparent shadow-2xl backdrop-blur-md p-0 size-10 to-teal-700'>
+                                    <Download size={22} />
+                                </Button>
+                                <HeartButton
+                                    imageId={item.id}
+                                    currentUser={currentUser}
+                                />
+                            </div>
+                            <div
+                                className="black-gradient invisible md:visible opacity-0 md:group-hover/item:opacity-100 transition-all duration-300 rounded-xl absolute left-0 right-0 z-10 bottom-0 h-full gap-2 flex flex-col justify-between p-3">
+                                <div className=' text-left'>
+                                    {item.Pro && <img src="/crown.png" width={30} height={30} className='' alt="proImage" />}
+                                </div>
+                                <div className='flex justify-between'>
+                                    <Button onClick={(e) => handleDownload(e, item)} className='bg-gradient-to-r rounded-full transition-all duration-300 from-teal-400 via-teal-500 h-10 gap-x-2  to-teal-600 hover:from-teal-500 hover:via-teal-600 hover:to-teal-700'>
+                                        <Download size={20} />
+                                        Download
                                     </Button>
                                     <HeartButton
                                         imageId={item.id}
                                         currentUser={currentUser}
                                     />
                                 </div>
-                                <div
-                                    className="black-gradient invisible md:visible opacity-0 md:group-hover/item:opacity-100 transition-all duration-300 rounded-xl absolute left-0 right-0 z-10 bottom-0 h-full gap-2 flex flex-col justify-between p-3">
-                                    <div className=' text-left'>
-                                        {item.Pro && <img src="/crown.png" width={30} height={30} className='' alt="proImage" />}
-                                    </div>
-                                    <div className='flex justify-between'>
-                                        <Button onClick={(e) => handleDownload(e, item)} className='bg-gradient-to-r rounded-full transition-all duration-300 from-teal-400 via-teal-500 h-10 gap-x-2  to-teal-600 hover:from-teal-500 hover:via-teal-600 hover:to-teal-700'>
-                                            <Download size={20} />
-                                            Download
-                                        </Button>
-                                        <HeartButton
-                                            imageId={item.id}
-                                            currentUser={currentUser}
-                                        />
-                                    </div>
-                                </div>
-                                <AntImage
-                                    className='rounded-xl block'
-                                    src={item?.img}
-                                    fallback='/fallback-image.png'
-                                    preview={false}
-                                />
-                            </Link>
+                            </div>
+                            <AntImage
+                                className='rounded-xl block'
+                                src={item?.img}
+                                fallback='/fallback-image.png'
+                                preview={false}
+                            />
                         </div>
                     ))}
                 </Masonry>
             </InfiniteScroll>
+
+
+            <ImageModal
+                isSubscribed={isSubscribed}
+                currentUser={currentUser}
+                open={open}
+                count={count}
+                handleImageModal={handleImageModal}
+            />
+
         </div>
     )
 }

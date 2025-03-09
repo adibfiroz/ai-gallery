@@ -15,13 +15,15 @@ import { useLoginModal } from "@/hooks/user-login-modal";
 interface HeartButtonProps {
     imageId: string
     currentUser?: SafeUser | null
-    heart?: boolean
+    open?: boolean,
+    handleImageModal?: () => void
 }
 
 const HeartButton: React.FC<HeartButtonProps> = ({
     imageId,
     currentUser,
-    heart
+    open,
+    handleImageModal
 }) => {
     const { hasFavorited, isLoading, toggleFavorite } = useFavorite({
         imageId,
@@ -43,8 +45,8 @@ const HeartButton: React.FC<HeartButtonProps> = ({
         e.preventDefault();
 
         if (!currentUser) {
-            if (heart) {
-                router.back()
+            if (open && handleImageModal) {
+                handleImageModal()
             }
             loginModal.onOpen();
             return
@@ -59,7 +61,7 @@ const HeartButton: React.FC<HeartButtonProps> = ({
             setLocalFavorited(prev => !prev);
         }
 
-        router.refresh()
+        // router.refresh()
         dispatch(fetchCurrentUser())
         // dispatch(fetchSingleImage({ imageId: imageId }))
     }

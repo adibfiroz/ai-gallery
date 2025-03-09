@@ -19,56 +19,49 @@ const SingleCollectionPage = async ({
     const take = TAKE; // Initial limit
     const skip = 0;  // Skip no records initially
 
-    const [data, count] = await prismadb.$transaction([
-        prismadb.collection.findUnique({
-            where: {
-                id: collectionId,
-                userId: currentUser?.id
-            },
-            include: {
-                images: {
-                    take,
-                    skip,
-                    orderBy: {
-                        createdAt: "desc"
-                    },
+    const collectionData = await prismadb.collection.findUnique({
+        where: {
+            id: collectionId,
+            userId: currentUser?.id,
+        },
+        include: {
+            images: {
+                take,
+                skip,
+                orderBy: {
+                    createdAt: "desc",
                 },
-
             },
-        }),
-        prismadb.collection.findUnique({
-            where: {
-                id: collectionId,
-                userId: currentUser?.id
-            },
-            include: {
-                images: {
-                    orderBy: {
-                        createdAt: "desc"
-                    },
-                }
+        },
+    });
 
+    const imageCount = await prismadb.image.count({
+        where: {
+            collectionIds: {
+                has: collectionId, // Check if the image's collectionIds array contains the collectionId
             },
-        }),
-    ]);
+            collections: {
+                some: {
+                    userId: currentUser?.id, // Ensure at least one collection associated to the image is from the current user.
+                },
+            },
+        },
+    });
 
-    const safeImages = data?.images.map((image) => ({
+    const safeData = collectionData?.images.map((image) => ({
         ...image,
         createdAt: image.createdAt.toISOString(),
     }));
-
-    const moreData = count && count?.images || []
 
     return (
         <div>
             <CollectionClient
                 collectionId={collectionId}
-                cName={data?.name}
+                cName={collectionData?.name}
                 isSubscribed={isSubscribed}
                 currentUser={currentUser}
-                data={safeImages ?? []}
-                totalCount={moreData}
-                initialTake={take}
+                data={safeData ?? []}
+                totalCount={imageCount}
             />
         </div>
     )

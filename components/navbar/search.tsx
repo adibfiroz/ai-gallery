@@ -126,7 +126,7 @@ const SearchComponent = () => {
                                 </li>
                                 <li className='flex flex-wrap gap-4 overflow-auto'>
                                     {recentSearches.map((searchItem, index) => (
-                                        <div onClick={() => saveSearch(searchItem)} key={index} className='px-6 py-3 lowercase bg-white whitespace-nowrap border rounded-md cursor-pointer shadow-sm hover:bg-teal-500/20 hover:text-teal-800 transition duration-300'>{searchItem}</div>
+                                        <div onClick={() => saveSearch(searchItem)} key={index} className='px-6 py-3 lowercase bg-white whitespace-nowrap border rounded-md cursor-pointer shadow-sm hover:bg-teal-500/20 hover:text-teal-800 hover:border-teal-500/20  transition duration-300'>{searchItem}</div>
                                     ))}
                                 </li>
                             </ul>

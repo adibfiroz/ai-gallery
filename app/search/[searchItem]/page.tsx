@@ -70,6 +70,12 @@ const SearchPage = async ({
     });
 
 
+    const safeData = data.map((image) => ({
+        ...image,
+        createdAt: image.createdAt.toISOString(),
+    }));
+
+
     return (
         <Container>
             <Category category={tag?.relatedTags} />
@@ -80,6 +86,7 @@ const SearchPage = async ({
                 isSubscribed={isSubscribed}
             />
             <ImageCleint
+                data={safeData}
                 sort={sort}
                 orientation={orientation}
                 currentUser={currentUser}
