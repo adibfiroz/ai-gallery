@@ -295,4 +295,4 @@ const SingleimageView = ({
     )
 }
 
-export default SingleimageView 
+export default SingleimageView

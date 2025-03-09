@@ -25,11 +25,11 @@ const FavouriteClient = ({
     const [images, setImages] = useState<SafeImage[]>(data);
     const [page, setPage] = useState(2);
     const [hasMoreImage, setHasMoreImage] = useState<any>(true)
-    const [loading, setLoading] = useState(false)
+    const [loadingMore, setLoadingMore] = useState(false)
     const dispatch = useAppDispatch();
 
     const handleLoadMore = async () => {
-        setLoading(true)
+        setLoadingMore(true)
         try {
             const response = await getMoreFavoriteImages({
                 page: page,
@@ -42,12 +42,12 @@ const FavouriteClient = ({
             setImages((prev) => [...prev, ...filteredNewImages]);
             setHasMoreImage(response?.hasMore)
             setPage((prev) => prev + 1)
-            setLoading(false)
+            setLoadingMore(false)
         } catch (error) {
-            setLoading(false)
+            setLoadingMore(false)
             console.error('Failed to load more images:', error);
         } finally {
-            setLoading(false)
+            setLoadingMore(false)
         }
     };
 
@@ -71,7 +71,7 @@ const FavouriteClient = ({
                 hasMoreImage={hasMoreImage}
             />
 
-            {loading &&
+            {loadingMore &&
                 <div className='flex justify-center my-4'>
                     <SyncLoader
                         size={20}
@@ -80,7 +80,7 @@ const FavouriteClient = ({
                 </div>
             }
 
-            {(hasMoreImage && !loading) &&
+            {(hasMoreImage && !loadingMore) &&
                 <div className='text-center my-4' onClick={handleLoadMore}>
                     <Button className='text-lg h-auto py-2 px-6'>Load More</Button>
                 </div>

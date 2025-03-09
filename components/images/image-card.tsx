@@ -99,6 +99,7 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
 
     const handleRemove = async (e: React.MouseEvent<HTMLButtonElement>, imageId: string) => {
         e.stopPropagation();
+        e.preventDefault();
         try {
             const filter = filterImage.filter((img: any) => img.id !== imageId);
             setFilterImage(filter)
@@ -111,7 +112,6 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
     useEffect(() => {
         setFilterImage(data)
     }, [data])
-
 
     return (
         <div>
@@ -132,16 +132,19 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
                         700: 2,    // For screens smaller than 700px, 2 columns
                         400: 2    // For screens smaller than 500px, 1 column
                     }}
-                    className="my-masonry-grid mt-5"
+                    className="my-masonry-grid mt-4"
                     columnClassName="my-masonry-grid_column">
                     {filterImage?.map((item: any) => (
                         <div onClick={() => handleData(item)} key={item.id} className=' relative antImgBlock group/item select-none overflow-hidden cursor-pointer'>
                             {(pathName === `/profile/${formattedName}/collections/${getCollectionId}` && !relatedImages) &&
-                                <Button onClick={(e) => handleRemove(e, item.id)} className='bg-white md:opacity-0 md:group-hover/item:opacity-100 rounded-full p-0 w-9 text-[#ff0000] hover:bg-gray-200 absolute right-4 top-4 z-20'>
+                                <Button onClick={(e) => handleRemove(e, item.id)} className='bg-white md:opacity-0 md:group-hover/item:opacity-100 rounded-full p-0 w-9 text-[#ff0000] hover:bg-gray-200 absolute right-3 top-3 z-20'>
                                     <X />
                                 </Button>
                             }
-                            <div className='md:hidden absolute z-10 p-4 flex justify-between bottom-0 left-0 right-0'>
+
+                            {item.Pro && <img src="/crown.png" width={25} height={25} className='md:hidden absolute left-3 top-3 z-10 shadow-lg' alt="proImage" />}
+
+                            <div className='md:hidden absolute z-10 p-3 flex justify-between bottom-0 left-0 right-0'>
                                 <Button onClick={(e) => handleDownload(e, item)} className='rounded-full transition-all duration-300 bg-transparent shadow-2xl backdrop-blur-md p-0 size-10 to-teal-700'>
                                     <Download size={22} />
                                 </Button>
@@ -151,7 +154,7 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
                                 />
                             </div>
                             <div
-                                className="black-gradient invisible md:visible opacity-0 md:group-hover/item:opacity-100 transition-all duration-300 rounded-xl absolute left-0 right-0 z-10 bottom-0 h-full gap-2 flex flex-col justify-between p-4">
+                                className="black-gradient invisible md:visible opacity-0 md:group-hover/item:opacity-100 transition-all duration-300 rounded-xl absolute left-0 right-0 z-10 bottom-0 h-full gap-2 flex flex-col justify-between p-3">
                                 <div className=' text-left'>
                                     {item.Pro && <img src="/crown.png" width={30} height={30} className='' alt="proImage" />}
                                 </div>

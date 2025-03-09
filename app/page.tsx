@@ -2,15 +2,16 @@ import Category from "@/components/category";
 import Container from "@/components/Container";
 import HomeFilters from "@/components/filters";
 import ImageCleint from "@/components/images/image-cleint";
-import prismadb from "@/lib/prismadb";
 import { getCurrentUser } from "./actions/getCurrentUser";
 import { checkSubscription } from "@/lib/subscription";
-import { TAKE } from "@/constants";
 import HeaderBanner from "@/components/header-banner";
+import Link from "next/link";
+import { TAKE } from "@/constants";
+import prismadb from "@/lib/prismadb";
 
 const category = [
   'nature', 'animals', 'sci-fi', 'anime', 'cinematic',
-  'food', 'architecture', 'car', 'photoreal', 'art', "city", "neon",
+  'food', 'architecture', 'car', 'photoreal', "city", "neon",
   "sky", "technology", "people", "snow", "fire", "digital", "space"
 ];
 
@@ -69,7 +70,6 @@ const Home = async ({
         isSubscribed={isSubscribed}
         currentUser={currentUser}
         data={safeData}
-        initialTake={take}
         orientation={orientation}
         sort={sort}
       />

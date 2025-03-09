@@ -62,7 +62,6 @@ const SingleCollectionPage = async ({
                 currentUser={currentUser}
                 data={safeData ?? []}
                 totalCount={imageCount}
-                initialTake={take}
             />
         </div>
     )

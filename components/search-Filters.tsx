@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/select"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import queryString from "query-string";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion"
 
 interface SearchFiltersProps {
-    count: number
+    count: any
     isSubscribed: boolean
     initialOrientation?: string;
     initialSort?: string;
@@ -37,7 +37,7 @@ const SearchFilters = ({ count, isSubscribed, initialOrientation, initialSort }:
     });
 
     useEffect(() => {
-        if (!searchParams) return; // Prevent running on SSR
+        if (!searchParams || pathName.startsWith("/image/")) return;
 
         const currentParams = queryString.parse(searchParams.toString());
 
@@ -55,7 +55,6 @@ const SearchFilters = ({ count, isSubscribed, initialOrientation, initialSort }:
         router.push(url.toLowerCase(), { scroll: false });
     }, [value, value2, router, pathName]);
 
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -64,7 +63,7 @@ const SearchFilters = ({ count, isSubscribed, initialOrientation, initialSort }:
             viewport={{ once: true }}
         >
             <h2 className="text-3xl py-4 md:text-4xl text-left w-full text-wrap font-semibold capitalize text-[#384261]" style={{ wordBreak: "break-word" }}>
-                {count === 0 ?
+                {parseInt(count) === 0 ?
                     <div>no results found for <span className=" text-gray-400">{`"`}{decodedString}{`"`}</span></div>
                     : <div>{decodedString}</div>
                 }

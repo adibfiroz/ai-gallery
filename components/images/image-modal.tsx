@@ -15,7 +15,6 @@ import toast from 'react-hot-toast';
 import { increaseFreeDownloadLimit } from '@/lib/api-limit';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import CollectionButton from '../collection-button';
-import Link from 'next/link';
 import { MAX_DOWNLOAD_LIMIT } from '@/constants';
 import Category from '../category';
 import { Image as AntImage, Dropdown, MenuProps, Modal } from 'antd';
@@ -28,6 +27,7 @@ import { setSingleImage, setTotalImages } from '@/store/slices/modalImagesSlice'
 import { fetchRelatedImages } from '@/store/slices/relatedImageSlice';
 import { Inter } from 'next/font/google';
 import { capitalizeString } from '@/store';
+import Link from 'next/link';
 const inter = Inter({ subsets: ['latin'] })
 
 interface ImageModalProps {
@@ -71,8 +71,14 @@ const ImageModal = ({
         }
     }, [currentUser]);
 
+    useEffect(() => {
+        if (currentImage?.tags) {
+            dispatch(fetchRelatedImages({ tags: currentImage.tags, imageId: selectedImage.id }));
+        }
+    }, [currentImage?.tags]);
+
     const hasFavorited = useMemo(() => {
-        return collections?.some((collection: Collection) => collection.imageIds.includes(currentImage?.id)) ?? false;
+        return collections?.some((collection: Collection) => currentImage && collection.imageIds.includes(currentImage?.id)) ?? false;
     }, [collections, currentImage?.id]);
 
     const handleCollectionModal = () => {
@@ -83,7 +89,9 @@ const ImageModal = ({
         e.stopPropagation();
         e.preventDefault()
         if (!currentUser) {
-            handleImageModal()
+            if (open) {
+                handleImageModal()
+            }
             loginModal.onOpen();
             return
         }
@@ -426,7 +434,7 @@ const ImageModal = ({
                     </div>
 
                     <div className='py-4'>
-                        <Link className='flex items-center gap-2 bg-black text-white rounded-xl py-4 px-6 hover:opacity-85 w-fit mx-auto text-lg' href={`/profile/${formattedName}/collections`}>
+                        <Link href={`/profile/${formattedName}/collections`} className='flex items-center gap-2 bg-black text-white rounded-xl py-4 px-6 cursor-pointer hover:opacity-85 w-fit mx-auto text-lg' >
                             Collections
                             <ArrowRight />
                         </Link>

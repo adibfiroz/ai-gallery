@@ -36,7 +36,7 @@ const HomeFilters = ({
     });
 
     useEffect(() => {
-        if (!searchParams) return; // Prevent running on SSR
+        if (!searchParams || pathName.startsWith("/image/")) return; // Prevent running on SSR
 
         const currentParams = queryString.parse(searchParams.toString());
 

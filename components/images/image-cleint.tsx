@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import ImageCard from './image-card'
 import { SafeImage, SafeUser } from '@/app/types'
 import { getMoreImages } from '@/app/actions/get-more-data'
@@ -15,23 +15,27 @@ interface ImageCleintProps {
     decodedString?: string
     orientation?: string
     sort?: string
-    initialTake: number
     currentUser?: SafeUser | null
     isSubscribed: boolean
 }
 
-
-const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decodedString, initialTake }: ImageCleintProps) => {
-    const [images, setImages] = useState<SafeImage[]>([]);
+const ImageCleint = ({
+    data,
+    orientation,
+    isSubscribed,
+    currentUser,
+    sort,
+    decodedString,
+}: ImageCleintProps) => {
+    const [images, setImages] = useState<SafeImage[]>(data);
     const [page, setPage] = useState(2);
     const [hasMoreImage, setHasMoreImage] = useState<any>(true)
-    const [loading, setLoading] = useState(false)
+    const [loadingMore, setLoadingMore] = useState(false)
     const dispatch = useAppDispatch();
     const pathName = usePathname()
 
-
     const handleLoadMore = async () => {
-        setLoading(true)
+        setLoadingMore(true)
         try {
             const response = await getMoreImages({
                 orientation: orientation,
@@ -47,12 +51,12 @@ const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decod
             setImages((prev) => [...prev, ...filteredNewImages]);
             setHasMoreImage(response?.hasMore)
             setPage((prev) => prev + 1)
-            setLoading(false)
+            setLoadingMore(false)
         } catch (error) {
-            setLoading(false)
+            setLoadingMore(false)
             console.error('Failed to load more images:', error);
         } finally {
-            setLoading(false)
+            setLoadingMore(false)
         }
     };
 
@@ -80,7 +84,8 @@ const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decod
                 hasMoreImage={hasMoreImage}
             />
 
-            {loading &&
+
+            {loadingMore &&
                 <div className='flex justify-center my-4'>
                     <SyncLoader
                         size={20}
@@ -89,7 +94,7 @@ const ImageCleint = ({ data, orientation, isSubscribed, currentUser, sort, decod
                 </div>
             }
 
-            {(hasMoreImage && !loading && data.length > 0) &&
+            {(hasMoreImage && !loadingMore && data.length > 0) &&
                 <div className='text-center my-4' onClick={handleLoadMore}>
                     <Button className='text-lg h-auto py-2 px-6'>Load More</Button>
                 </div>

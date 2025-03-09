@@ -3,6 +3,7 @@
 import prismadb from "@/lib/prismadb";
 import { getCurrentUser } from "./getCurrentUser";
 import { TAKE } from "@/constants";
+import { checkSubscription } from "@/lib/subscription";
 
 interface ICollectionParams {
   collectionId: string;
@@ -15,6 +16,57 @@ export interface IImageParams {
   searchItem?: string;
   page: number;
 }
+
+export const getInitialImages = async (params: IImageParams) => {
+  try {
+    const { orientation, sort, searchItem } = params;
+    const isSubscribed = await checkSubscription();
+
+    let query: any = {};
+
+    const validOrientations = ["landscape", "portrait", "square"] as const;
+    if (validOrientations.includes(orientation as any)) {
+      query.orientation = orientation as string;
+    }
+
+    if (searchItem) {
+      query = {
+        ...query,
+        OR: [
+          { caption: { contains: searchItem, mode: "insensitive" } },
+          { tags: { hasSome: searchItem.split(",") } },
+        ],
+      };
+    }
+
+    if (sort === "featured" && isSubscribed) {
+      query.Pro = true;
+    }
+
+    let orderByQuery: any;
+
+    if (sort === "newest") {
+      orderByQuery = { createdAt: "desc" };
+    } else if (!validOrientations.includes(orientation as any)) {
+      orderByQuery = { views: "desc" };
+    }
+    const data = await prismadb.image.findMany({
+      where: query,
+      orderBy: orderByQuery,
+      take: TAKE,
+      skip: 0,
+    });
+
+    const safeImages = data.map((image) => ({
+      ...image,
+      createdAt: image.createdAt.toISOString(),
+    }));
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+    return safeImages;
+  } catch (error: any) {
+    throw new Error(error);
+  }
+};
 
 export const getMoreImages = async (params: IImageParams) => {
   try {
@@ -108,7 +160,6 @@ export const moreCollectionImages = async (params: ICollectionParams) => {
     });
 
     const hasMore = page && page * TAKE < totalImages;
-
     const moreData = data?.images.map((image) => ({
       ...image,
       createdAt: image.createdAt.toISOString(),
