@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Bookmark, Check, Download, Link2, Play, SquareArrowOutUpRight, X } from 'lucide-react';
+import { ArrowRight, Bookmark, Check, Copy, Download, Link2, Play, SquareArrowOutUpRight, X } from 'lucide-react';
 import { Button } from '../ui/button';
 var FileSaver = require('file-saver');
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -15,9 +15,9 @@ import toast from 'react-hot-toast';
 import { increaseFreeDownloadLimit } from '@/lib/api-limit';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import CollectionButton from '../collection-button';
-import { MAX_DOWNLOAD_LIMIT } from '@/constants';
+import { MAX_DOWNLOAD_LIMIT, MAX_FREE_CAPTION_LIMIT, MAX_PRO_CAPTION_LIMIT } from '@/constants';
 import Category from '../category';
-import { Image as AntImage, Dropdown, MenuProps, Modal } from 'antd';
+import { Image as AntImage, Dropdown, MenuProps, Modal, Tooltip } from 'antd';
 import { fetchFreeDownloadCount } from '@/store/slices/freeDownloadSlice';
 import { useAppDispatch, useAppSelector } from '@/hooks/store';
 import { fetchCollections } from '@/store/slices/collectionSlice';
@@ -28,6 +28,8 @@ import { fetchRelatedImages } from '@/store/slices/relatedImageSlice';
 import { Inter } from 'next/font/google';
 import { capitalizeString } from '@/store';
 import Link from 'next/link';
+import axios from "axios"
+import { fetchFreeCaptionCount, fetchProCaptionCount } from '@/store/slices/captionCountSlice';
 const inter = Inter({ subsets: ['latin'] })
 
 interface ImageModalProps {
@@ -47,6 +49,10 @@ const ImageModal = ({
 }: ImageModalProps) => {
     const [open2, setOpen2] = useState(false)
     const [copyLink, setCopyLink] = useState(false);
+    const [captionModal, setCaptionModal] = useState(false);
+    const [getCaption, setGetCaption] = useState("");
+    const [copyCaption, setCopyCaption] = useState(false);
+    const [copyPrompt, setCopyPrompt] = useState(false);
     const selectedImage = useAppSelector((state) => state.modalImages.singleImage);
     const totalImages = useAppSelector((state) => state.modalImages.totalImages);
 
@@ -62,8 +68,18 @@ const ImageModal = ({
     const { data: collections } = useAppSelector((state) => state.collection);
     const { data: singleImage, loading } = useAppSelector((state) => state.image);
     const { data: relatedImages, loading: isLoading } = useAppSelector((state) => state.relatedImages);
+    const { freeCaptionCount, proCaptionCount } = useAppSelector(
+        (state) => state.captionCount
+    );
 
     const currentImage = singleImage;
+
+    useEffect(() => {
+        if (currentUser) {
+            dispatch(fetchFreeCaptionCount());
+            dispatch(fetchProCaptionCount());
+        }
+    }, [currentUser]);
 
     useEffect(() => {
         if (currentUser) {
@@ -73,7 +89,7 @@ const ImageModal = ({
 
     useEffect(() => {
         if (currentImage?.tags) {
-            dispatch(fetchRelatedImages({ tags: currentImage.tags, imageId: selectedImage.id }));
+            dispatch(fetchRelatedImages({ tags: currentImage?.tags, imageId: selectedImage?.id }));
         }
     }, [currentImage?.tags]);
 
@@ -122,10 +138,16 @@ const ImageModal = ({
     };
 
     const left = () => {
+        if (scanLoading) {
+            return
+        }
         setCurrentIndex(prevIndex => Math.max(prevIndex - 1, 0));
     };
 
     const right = () => {
+        if (scanLoading) {
+            return
+        }
         setCurrentIndex(prevIndex => Math.min(prevIndex + 1, totalImages.length - 1));
     };
 
@@ -151,7 +173,7 @@ const ImageModal = ({
     const items: MenuProps['items'] = [
         {
             label: (
-                <CopyToClipboard text={`${process.env.NEXT_PUBLIC_APP_URL}/image/${selectedImage?.id}` || ""} onCopy={onCopyLink}>
+                <CopyToClipboard text={`${process.env.NEXT_PUBLIC_APP_URL}image/${selectedImage?.id}` || ""} onCopy={onCopyLink}>
                     <div className='flex items-center gap-2'>
                         <Link2 size={18} />
                         copy link
@@ -165,12 +187,15 @@ const ImageModal = ({
 
     useEffect(() => {
         if (currentImage?.tags) {
-            dispatch(fetchRelatedImages({ tags: currentImage.tags, imageId: selectedImage?.id }));
+            dispatch(fetchRelatedImages({ tags: currentImage?.tags, imageId: selectedImage?.id }));
         }
     }, [currentImage?.tags]);
 
 
     const handleData = async (item: SafeImage) => {
+        if (scanLoading) {
+            return
+        }
         modalScroll()
         dispatch(setTotalImages(relatedImages));
         dispatch(setSingleImage(item))
@@ -199,10 +224,83 @@ const ImageModal = ({
         }
     }, [singleImage, open, pathName])
 
+    const [scanLoading, setScanLoading] = useState(false)
+
+    const handleCheckClose = () => {
+        if (scanLoading) {
+            return
+        }
+        dispatch(setTotalImages([]));
+        dispatch(setSingleImage(null))
+        handleImageModal()
+    }
+
+    const handleSubmit = async () => {
+        setScanLoading(true)
+        try {
+            const response = await axios.post("/api/caption", {
+                image: currentImage?.img,
+            });
+            setCaptionModal(true)
+            setGetCaption(response.data)
+            setScanLoading(false)
+            if (isSubscribed) {
+                dispatch(fetchProCaptionCount());
+            } else {
+                dispatch(fetchFreeCaptionCount());
+            }
+        } catch (error: any) {
+            if (error?.response?.status === 403) {
+                toast.error(error?.response?.data.message)
+            } else if (error?.response?.status === 401) {
+                toast.error(error?.response?.data.message)
+            } else {
+                toast.error("Something went wrong!")
+            }
+            setScanLoading(false)
+        }
+    }
+
+    const itemsDrop: MenuProps['items'] = [
+        {
+            label: (
+                <div>
+                    {isSubscribed ?
+                        <div className=' text-center mb-1'>
+                            {proCaptionCount} / {MAX_PRO_CAPTION_LIMIT}
+                        </div>
+                        :
+                        <div className=' text-center mb-1'>
+                            {freeCaptionCount} / {MAX_FREE_CAPTION_LIMIT}
+                        </div>
+                    }
+
+                    <Button onClick={handleSubmit} className='h-auto rounded-lg btn-green-gradient'>
+                        Generate Caption
+                    </Button>
+                </div>
+            ),
+            key: '0',
+            className: "!p-0"
+        },
+    ];
+
+    const handleCaptionModal = () => setCaptionModal(!captionModal)
+
+    const onCopyPrompt = () => {
+        setCopyPrompt(true);
+        setTimeout(() => setCopyPrompt(false), 3000);
+    };
+
+    const onCopyCaption = () => {
+        setCopyCaption(true);
+        setTimeout(() => setCopyCaption(false), 3000);
+    };
+
     return (
         <Modal
             open={open}
-            onCancel={handleImageModal}
+            onCancel={handleCheckClose}
             width={1000}
             centered
             destroyOnClose={true}
@@ -231,15 +329,54 @@ const ImageModal = ({
                         <div className=' grid lg:grid-cols-3'>
                             <div className='p-4 lg:col-span-2 relative text-center prevImage'>
                                 <div className='mb-10 lg:mb-0'></div>
-                                <AntImage
-                                    className='max-h-[80vh] rounded-xl'
-                                    src={currentImage?.img}
-                                    fallback='/fallback-image.png'
-                                />
+                                <div className='w-fit mx-auto relative'>
+                                    <AntImage
+                                        className={cn('max-h-[80vh] rounded-xl ', scanLoading && " animate-brightness")}
+                                        src={currentImage?.img}
+                                        fallback='/fallback-image.png'
+                                        preview={!scanLoading}
+                                    />
+
+                                    <div className=' absolute right-3 bottom-3'>
+                                        <Dropdown
+                                            menu={{
+                                                items: itemsDrop,
+                                            }}
+                                            placement="topRight"
+                                            trigger={['click']}
+                                            className='!px-0'
+                                        >
+                                            <Button disabled={scanLoading} className='h-6' onClick={(e) => e.preventDefault()}>
+                                                <img src="/caption3.png" width={30} height={30} alt="" />
+                                            </Button>
+                                        </Dropdown>
+                                    </div>
+
+                                    {scanLoading && <div className="scan-line"></div>}
+                                </div>
                             </div>
                             <div className=' h-full flex flex-col gap-y-5 justify-between'>
                                 <div className='p-4'>
-                                    <div>Prompt</div>
+                                    <div className='text-left flex items-center gap-4 font-semibold text-[#69676e]'>
+                                        <div>Prompt</div>
+                                        <div className=" relative group/item">
+                                            <Tooltip title="Copy Prompt">
+                                                <div>
+                                                    <CopyToClipboard text={currentImage?.caption} onCopy={onCopyPrompt}>
+                                                        <div className="flex cursor-pointer items-center text-stone-600 gap-2 p-2 border border-stone-200 hover:bg-[#dedee760] text-sm rounded-lg">
+                                                            {copyPrompt ?
+                                                                <Check size={14} />
+                                                                :
+                                                                <Copy size={14} />
+                                                            }
+                                                        </div>
+                                                    </CopyToClipboard>
+                                                </div>
+                                            </Tooltip>
+                                        </div>
+
+                                    </div>
+
                                     <div className='bg-stone-600/5 w-full text-sm rounded-xl p-3 mt-3'>
                                         {currentImage?.caption}
                                     </div>
@@ -307,7 +444,7 @@ const ImageModal = ({
                                             </a>
                                         </Dropdown>
                                     }
-                                    <Button onClick={(e) => handleDownload(e, selectedImage)} className={cn('bg-gradient-to-r rounded-full transition-all duration-300 from-teal-400 via-teal-500 h-10 gap-x-2  to-teal-600 hover:from-teal-500 hover:via-teal-600 hover:to-teal-700')}>
+                                    <Button onClick={(e) => handleDownload(e, selectedImage)} className={cn('rounded-full transition-all duration-300 btn-green-gradient')}>
                                         <Download size={20} />
                                         Download
                                     </Button>
@@ -421,7 +558,7 @@ const ImageModal = ({
                     <div className='flex justify-between p-4'>
                         <div className='text-2xl text-[#384261] font-semibold text-center'>Save to Collection</div>
                     </div>
-                    <div className='max-h-[50vh] bg-teal-500/5 overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
+                    <div className='max-h-[50vh] bg-teal-500/10 overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
                         {collections?.map((item: Collection) => (
                             <div key={item.id}>
                                 <CollectionButton
@@ -441,6 +578,41 @@ const ImageModal = ({
                     </div>
                 </Modal>
             }
+
+
+            <Modal
+                open={captionModal}
+                onCancel={handleCaptionModal}
+                width={500}
+                centered
+                cancelButtonProps={{ hidden: true }}
+                okButtonProps={{ hidden: true }}
+            >
+                <div className='p-4'>
+                    <div className='text-xl text-left flex items-center gap-4 font-semibold'>
+                        <div>Caption</div>
+                        <div className=" relative group/item">
+                            <Tooltip title="Copy Caption">
+                                <div>
+                                    <CopyToClipboard text={getCaption} onCopy={onCopyCaption}>
+                                        <div className="flex cursor-pointer items-center text-stone-600 gap-2 p-2 border border-stone-200 hover:bg-[#dedee760] text-sm rounded-lg">
+                                            {copyCaption ?
+                                                <Check size={14} />
+                                                :
+                                                <Copy size={14} />
+                                            }
+                                        </div>
+                                    </CopyToClipboard>
+                                </div>
+                            </Tooltip>
+                        </div>
+                    </div>
+                    <div className='bg-stone-600/5 w-full text-lg rounded-xl p-3 mt-3'>
+                        {getCaption}
+                    </div>
+                </div>
+
+            </Modal>
         </Modal>
     )
 }

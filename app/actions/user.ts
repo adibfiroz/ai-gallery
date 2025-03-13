@@ -101,7 +101,7 @@ export const dailyLimit = async () => {
         // Reset count for the new day
         const updatedUser = await prismadb.userDownloadLimit.update({
           where: { userId: currentUser?.id },
-          data: { count: 0, updatedAt: today },
+          data: { count: 0, captionCount: 0, updatedAt: today },
         });
         return updatedUser.count;
       }

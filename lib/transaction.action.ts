@@ -45,7 +45,7 @@ export async function checkoutCredits(transaction: any) {
           currency: "USD",
           product_data: {
             name: transaction.plan,
-            description: "AI Generations",
+            description: "One Plan Unlimited Benefits.",
           },
           unit_amount: amount,
           recurring: {
@@ -58,6 +58,7 @@ export async function checkoutCredits(transaction: any) {
     metadata: {
       userId: currentUser.id,
       plan: transaction.plan,
+      credits: transaction.credits,
       amount: transaction.amount,
     },
   });

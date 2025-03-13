@@ -9,6 +9,7 @@ import { SyncLoader } from 'react-spinners'
 import { useAppDispatch } from '@/hooks/store'
 import { usePathname } from 'next/navigation'
 import { setTotalImages } from '@/store/slices/modalImagesSlice'
+import { TAKE } from '@/constants'
 
 interface ImageCleintProps {
     data: SafeImage[]
@@ -29,12 +30,15 @@ const ImageCleint = ({
 }: ImageCleintProps) => {
     const [images, setImages] = useState<SafeImage[]>(data);
     const [page, setPage] = useState(2);
-    const [hasMoreImage, setHasMoreImage] = useState<any>(true)
+    const [hasMoreImage, setHasMoreImage] = useState<any>(data.length < TAKE ? false : true)
     const [loadingMore, setLoadingMore] = useState(false)
     const dispatch = useAppDispatch();
     const pathName = usePathname()
 
     const handleLoadMore = async () => {
+        if (!hasMoreImage) {
+            return
+        }
         setLoadingMore(true)
         try {
             const response = await getMoreImages({
@@ -65,7 +69,7 @@ const ImageCleint = ({
     }, [data])
 
     useEffect(() => {
-        setHasMoreImage(true)
+        setHasMoreImage(data.length < TAKE ? false : true)
         setPage(2)
     }, [orientation, sort])
 
@@ -94,7 +98,7 @@ const ImageCleint = ({
                 </div>
             }
 
-            {(hasMoreImage && !loadingMore && data.length > 0) &&
+            {(hasMoreImage && !loadingMore) &&
                 <div className='text-center my-4' onClick={handleLoadMore}>
                     <Button className='text-lg h-auto py-2 px-6'>Load More</Button>
                 </div>

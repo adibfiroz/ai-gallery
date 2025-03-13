@@ -11,10 +11,12 @@ const inter = Inter({ subsets: ['latin'] })
 const Checkout = ({
     plan,
     amount,
+    credits,
     currentUser,
     isSubscribed
 }: {
     plan: string;
+    credits: number;
     amount: number;
     currentUser?: SafeUser | null,
     isSubscribed: boolean
@@ -31,6 +33,7 @@ const Checkout = ({
         const transaction = {
             plan,
             amount,
+            credits
         };
 
         await checkoutCredits(transaction);

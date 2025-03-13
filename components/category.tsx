@@ -68,7 +68,7 @@ const Category = ({ category }: CategoryProps) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className='sticky top-[58px] z-20 sm:top-16 bg-white'>
+            className='sticky top-[58px] z-40 sm:top-16 bg-white'>
             {items?.length &&
                 <div className=' relative py-4 '>
                     {canScrollLeft && (

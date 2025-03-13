@@ -13,6 +13,7 @@ model User {
   email          String?   @unique
   emailVerified  DateTime?
   image          String?
+  downloads      Int       @default(0)
   hashedPassword String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -42,11 +43,12 @@ model Account {
 }
 
 model UserDownloadLimit {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @unique
-  count     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @unique
+  count        Int      @default(0)
+  captionCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model UserSubscription {
@@ -56,7 +58,9 @@ model UserSubscription {
   stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
   stripePriceId          String?   @map(name: "stripe_price_id")
   stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
+  credits                Int       @default(0)
   amount                 Int?
+  plan                   String?
 }
 
 model Image {

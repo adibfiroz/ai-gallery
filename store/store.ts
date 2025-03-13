@@ -5,6 +5,7 @@ import userReducer from "@/store/slices/userSlice";
 import imageReducer from "@/store/slices/imageSlice";
 import modalImagesReducer from "@/store/slices/modalImagesSlice";
 import relatedImagesReducer from "@/store/slices/relatedImageSlice";
+import captionCountReducer from "@/store/slices/captionCountSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     image: imageReducer,
     modalImages: modalImagesReducer,
     relatedImages: relatedImagesReducer,
+    captionCount: captionCountReducer,
   },
 });
 

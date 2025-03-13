@@ -8,6 +8,7 @@ import { Button } from 'antd'
 import { SyncLoader } from 'react-spinners'
 import { useAppDispatch } from '@/hooks/store'
 import { setTotalImages } from '@/store/slices/modalImagesSlice'
+import { TAKE } from '@/constants'
 
 interface FavouriteClientProps {
     data: SafeImage[] | any
@@ -24,11 +25,14 @@ const FavouriteClient = ({
 }: FavouriteClientProps) => {
     const [images, setImages] = useState<SafeImage[]>(data);
     const [page, setPage] = useState(2);
-    const [hasMoreImage, setHasMoreImage] = useState<any>(true)
+    const [hasMoreImage, setHasMoreImage] = useState<any>(data.length < TAKE ? false : true)
     const [loadingMore, setLoadingMore] = useState(false)
     const dispatch = useAppDispatch();
 
     const handleLoadMore = async () => {
+        if (!hasMoreImage) {
+            return
+        }
         setLoadingMore(true)
         try {
             const response = await getMoreFavoriteImages({
