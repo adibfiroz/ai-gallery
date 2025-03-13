@@ -20,7 +20,7 @@ const AboutPage = () => {
             <div className='my-10 p-4'>
                 <div className='max-w-4xl mx-auto font-medium terms'>
                     <h2 className='text-4xl font-semibold mb-5'>About Us</h2>
-                    <p>Welcome to Pixsider, your go-to AI image gallery for high-quality, curated AI-generated images. Our platform operates on a subscription model, providing users with access to an extensive collection of AI-generated visuals tailored for creative professionals, businesses, and enthusiasts.</p>
+                    <p>Welcome to Pixsider, your go-to AI image gallery for high-quality, curated AI images. Our platform operates on a subscription model, providing users with access to an extensive collection of AI visuals tailored for creative professionals, businesses, and enthusiasts.</p>
 
                     <p>
                         At Pixsider, we believe in the power of AI to revolutionize digital content. Our team carefully curates and adds AI-generated images to our growing collection, ensuring that our users have access to unique and high-resolution visuals. Additionally, we provide tools for generating captions, making it easier to enhance and personalize your downloaded images.

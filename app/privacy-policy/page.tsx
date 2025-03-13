@@ -13,7 +13,7 @@ const PrivacyPolicy = () => {
             <div className=" max-w-4xl mx-auto px-0 privacy terms font-medium">
                 <h1>Privacy Policy</h1>
                 <h3>Introduction</h3>
-                <p>Pixsider ({`"we"`}, {`"our"`}, or {`"us"`}) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI image gallery website and caption generation service ("the Service"). By accessing or using our Service, you agree to the collection and use of your information in accordance with this Privacy Policy. If you do not agree with this policy, please do not use our Service.</p>
+                <p>Pixsider ({`"we"`}, {`"our"`}, or {`"us"`}) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI image gallery website and caption generation service {`("the Service")`}. By accessing or using our Service, you agree to the collection and use of your information in accordance with this Privacy Policy. If you do not agree with this policy, please do not use our Service.</p>
 
                 <h3>Information We Collect</h3>
                 <p>We may collect and process the following types of information:</p>
