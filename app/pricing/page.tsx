@@ -19,8 +19,9 @@ const tiers = [
         id: 'tier-hobby',
         href: '#',
         priceMonthly: 0,
+        credits: 0,
         description: "Get started and explore",
-        features: ['Limited downloads', 'Collections upto 5'],
+        features: ['Limited downloads', 'Collections upto 5', "Generate 5 daily captions", 'Personal use'],
         featured: false,
     },
     {
@@ -28,12 +29,15 @@ const tiers = [
         id: 'tier-enterprise',
         href: '#',
         priceMonthly: 5,
+        credits: 0,
         description: 'Unlimited benefits, one plan',
         features: [
             'Unlimited downloads',
             'Collections upto 100',
+            "Generate Upto 2000 captions",
             'Browse thousands of images',
             'Filter featured images',
+            'Personal & commercial use'
         ],
         featured: true,
     },
@@ -119,6 +123,7 @@ const PricingPage = async () => {
                                     :
                                     <Checkout
                                         plan={tier.name}
+                                        credits={tier.credits}
                                         amount={tier.priceMonthly}
                                         currentUser={currentUser}
                                         isSubscribed={isSubscribed}

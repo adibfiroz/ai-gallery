@@ -143,7 +143,7 @@ const Header = ({ currentUser }: HeaderProps) => {
     }
 
     return (
-        <header className='sticky top-0 z-30 shadow-sm bg-white'>
+        <header className='sticky top-0 z-50 shadow-sm bg-white'>
             <div className=' container mx-auto'>
                 <div className='flex justify-between items-center'>
                     <Link href="/">

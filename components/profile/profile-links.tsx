@@ -41,7 +41,7 @@ const ProfileLinks = ({ currentUser, isSubscribed, collections }: ProfileLinksPr
     return (
         <div>
             <div className='profile-scroll overflow-x-auto flex items-center justify-between gap-x-5'>
-                <div className='flex gap-x-2 bg-stone-600/5 rounded-full'>
+                <div className='flex gap-x-2 bg-stone-600/10 rounded-full'>
                     {routes.map((route) => (
                         <Link href={route.href} key={route.label} className={cn('py-3 px-5 text-gray-600 hover:text-black rounded-full font-medium', pathName === route.href && "bg-black text-white hover:text-white")}>{route.label}</Link>
                     ))}

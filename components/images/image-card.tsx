@@ -11,7 +11,7 @@ import HeartButton from '../HeartButton'
 import { SafeImage, SafeUser } from '@/app/types'
 import { increamentDownloads, increamentViewsCount } from '@/app/actions/image'
 import { useLoginModal } from '@/hooks/user-login-modal'
-import { increaseFreeDownloadLimit } from '@/lib/api-limit'
+import { increaseFreeDownloadLimit, increaseTotalDownloadCount } from '@/lib/api-limit'
 import toast from 'react-hot-toast'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { removeImagetoCollection } from '@/app/actions/collection'
@@ -64,8 +64,8 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
         dispatch(setTotalImages(data));
         dispatch(setSingleImage(item))
         dispatch(fetchSingleImage({ imageId: item.id }))
-        setOpen(true)
         await increamentViewsCount({ imageId: item.id })
+        setOpen(true)
     };
 
     const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>, item: SafeImage) => {
@@ -90,6 +90,7 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
             }
             FileSaver.saveAs(item.img, `${item.caption}.png`);
             await increamentDownloads({ imageId: item?.id })
+            await increaseTotalDownloadCount()
         } catch (error) {
             toast.error("something went wrong!")
         }

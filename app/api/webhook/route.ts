@@ -38,6 +38,8 @@ export async function POST(req: Request) {
         stripeSubscriptionId: subscription.id,
         stripeCustomerId: subscription.customer as string,
         stripePriceId: subscription.items.data[0].price.id,
+        plan: session?.metadata?.plan || "",
+        credits: Number(session?.metadata?.credits) || 0,
         amount: Number(session?.metadata?.amount) || 0,
         stripeCurrentPeriodEnd: new Date(
           subscription.current_period_end * 1000

@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CircleDollarSign, LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { BookmarkCheck, CircleDollarSign, CircleUserRound, LayoutDashboard, LogOut, Settings } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 
@@ -39,21 +39,28 @@ export const UserAvatar = ({
         <Link href={`/profile/${formattedName}`}>
           <DropdownMenuItem className=" flex gap-10 cursor-pointer px-3 py-2.5  justify-between">
             Profile
-            <LayoutDashboard size={18} />
+            <CircleUserRound className="text-stone-500" size={18} />
+          </DropdownMenuItem>
+        </Link>
+
+        <Link href={`/profile/${formattedName}/collections`}>
+          <DropdownMenuItem className=" flex gap-10 cursor-pointer px-3 py-2.5  justify-between">
+            Collections
+            <BookmarkCheck className="text-stone-500" size={18} />
           </DropdownMenuItem>
         </Link>
 
         <Link href="/pricing">
           <DropdownMenuItem className=" flex gap-10 cursor-pointer px-3 py-2.5 justify-between">
             Pricing
-            <CircleDollarSign size={18} />
+            <CircleDollarSign className="text-stone-500" size={18} />
           </DropdownMenuItem>
         </Link>
 
         <Link href={`/profile/${formattedName}/settings`}>
           <DropdownMenuItem className=" flex gap-10 cursor-pointer px-3 py-2.5 justify-between">
             Settings
-            <Settings size={18} />
+            <Settings className="text-stone-500" size={18} />
           </DropdownMenuItem>
         </Link>
 
@@ -62,12 +69,7 @@ export const UserAvatar = ({
           Logout
           <LogOut className=" text-[#ff4d88]" size={18} />
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className=" text-[11px] hover:bg-transparent text-blue-gray-400">
-          <Link href="/terms">Terms </Link>
-          <span className="px-1">•</span>
-          <Link href="/privacy"> Privacy policy</Link>
-        </DropdownMenuItem>
+
       </DropdownMenuContent>
     </DropdownMenu>
 
