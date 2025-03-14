@@ -64,8 +64,8 @@ const ImageCard = ({ data, totalImages, hasMoreImage, relatedImages, isSubscribe
         dispatch(setTotalImages(data));
         dispatch(setSingleImage(item))
         dispatch(fetchSingleImage({ imageId: item.id }))
-        await increamentViewsCount({ imageId: item.id })
         setOpen(true)
+        await increamentViewsCount({ imageId: item.id })
     };
 
     const handleDownload = async (e: React.MouseEvent<HTMLButtonElement>, item: SafeImage) => {
