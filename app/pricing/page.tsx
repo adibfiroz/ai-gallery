@@ -34,7 +34,7 @@ const tiers = [
         features: [
             'Unlimited downloads',
             'Collections upto 100',
-            "Generate Upto 2000 captions",
+            `Generate Upto 2000 captions monthly`,
             'Browse thousands of images',
             'Filter featured images',
             'Personal & commercial use'
