@@ -30,6 +30,8 @@ import { capitalizeString } from '@/store';
 import Link from 'next/link';
 import axios from "axios"
 import { fetchFreeCaptionCount, fetchProCaptionCount } from '@/store/slices/captionCountSlice';
+import { motion } from "framer-motion"
+
 const inter = Inter({ subsets: ['latin'] })
 
 interface ImageModalProps {
@@ -173,7 +175,7 @@ const ImageModal = ({
     const items: MenuProps['items'] = [
         {
             label: (
-                <CopyToClipboard text={`${process.env.NEXT_PUBLIC_APP_URL}image/${selectedImage?.id}` || ""} onCopy={onCopyLink}>
+                <CopyToClipboard text={`${process.env.NEXT_PUBLIC_APP_URL}image/${currentImage?.id}` || ""} onCopy={onCopyLink}>
                     <div className='flex items-center gap-2'>
                         <Link2 size={18} />
                         copy link
@@ -187,7 +189,7 @@ const ImageModal = ({
 
     useEffect(() => {
         if (currentImage?.tags) {
-            dispatch(fetchRelatedImages({ tags: currentImage?.tags, imageId: selectedImage?.id }));
+            dispatch(fetchRelatedImages({ tags: currentImage?.tags, imageId: currentImage?.id }));
         }
     }, [currentImage?.tags]);
 
@@ -329,7 +331,11 @@ const ImageModal = ({
                         <div className=' grid lg:grid-cols-3'>
                             <div className='p-4 lg:col-span-2 relative text-center prevImage'>
                                 <div className='mb-10 lg:mb-0'></div>
-                                <div className='w-fit mx-auto relative'>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.5 }}
+                                    className='w-fit mx-auto relative'>
                                     <AntImage
                                         className={cn('max-h-[80vh] rounded-xl ', scanLoading && " animate-brightness")}
                                         src={currentImage?.img}
@@ -353,7 +359,7 @@ const ImageModal = ({
                                     </div>
 
                                     {scanLoading && <div className="scan-line"></div>}
-                                </div>
+                                </motion.div>
                             </div>
                             <div className=' h-full flex flex-col gap-y-5 justify-between'>
                                 <div className='p-4'>
@@ -377,17 +383,29 @@ const ImageModal = ({
 
                                     </div>
 
-                                    <div className='bg-stone-600/5 w-full text-sm rounded-xl p-3 mt-3'>
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.5 }}
+                                        className='bg-stone-600/5 w-full text-sm rounded-xl p-3 mt-3'>
                                         {currentImage?.caption}
-                                    </div>
+                                    </motion.div>
 
                                     <div className="grid grid-cols-2 gap-4 mt-8">
-                                        <div className="">
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.5 }}
+                                            className="">
                                             <div className=" text-sm text-left font-semibold text-[#69676e]">Views</div>
                                             <div className=" text-sm text-left leading-6 mt-1">{currentImage?.views}</div>
-                                        </div>
+                                        </motion.div>
 
-                                        <div className=" text-left">
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.5 }}
+                                            className=" text-left">
                                             <div className=" text-sm text-left font-semibold text-[#69676e]">Likes</div>
                                             <div className='flex items-center'>
                                                 {currentUser &&
@@ -400,18 +418,26 @@ const ImageModal = ({
                                                 {currentImage?.userlikeIds.length || 0}
 
                                             </div>
-                                        </div>
+                                        </motion.div>
 
-                                        <div className=" text-left">
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.5 }}
+                                            className=" text-left">
                                             <div className=" text-sm text-left font-semibold text-[#69676e]">Downloads</div>
                                             <div className="flex gap-2 items-center text-sm text-left leading-6 mt-1">
                                                 <Download size={22} className={cn("text-blue-700")} />
                                                 {currentImage?.downloads}
                                             </div>
-                                        </div>
+                                        </motion.div>
 
                                         {currentUser &&
-                                            <div className="text-left">
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.5 }}
+                                                className="text-left">
                                                 <div className=" text-sm text-left font-semibold text-[#69676e]">Collections</div>
                                                 <>
                                                     {hasFavorited ?
@@ -423,31 +449,42 @@ const ImageModal = ({
                                                         </Button>
                                                     }
                                                 </>
-                                            </div>
+                                            </motion.div>
                                         }
                                     </div>
                                 </div>
 
                                 <div className='flex justify-between items-center px-4 pb-4'>
                                     {currentImage?.img &&
-                                        <Dropdown
-                                            menu={{ items }}
-                                            placement="topLeft"
-                                            trigger={['click']}>
-                                            <a onClick={(e) => e.preventDefault()} className=' text-white items-center bg-[#384261] px-4 py-2.5 text-sm flex rounded-full gap-x-2'>
-                                                {copyLink ?
-                                                    <Check size={18} />
-                                                    :
-                                                    <SquareArrowOutUpRight size={18} />
-                                                }
-                                                Share
-                                            </a>
-                                        </Dropdown>
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.5 }}>
+                                            <Dropdown
+                                                menu={{ items }}
+                                                placement="topLeft"
+                                                trigger={['click']}>
+                                                <a onClick={(e) => e.preventDefault()} className=' text-white items-center bg-[#384261] px-4 py-2.5 text-sm flex rounded-full gap-x-2'>
+                                                    {copyLink ?
+                                                        <Check size={18} />
+                                                        :
+                                                        <SquareArrowOutUpRight size={18} />
+                                                    }
+                                                    Share
+                                                </a>
+                                            </Dropdown>
+                                        </motion.div>
                                     }
-                                    <Button onClick={(e) => handleDownload(e, selectedImage)} className={cn('rounded-full transition-all duration-300 btn-green-gradient')}>
-                                        <Download size={20} />
-                                        Download
-                                    </Button>
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.5 }}>
+                                        <Button
+                                            onClick={(e) => handleDownload(e, currentImage)} className={cn('rounded-full transition-all duration-300 btn-green-gradient')}>
+                                            <Download size={20} />
+                                            Download
+                                        </Button>
+                                    </motion.div>
                                 </div>
                             </div>
                         </div>
