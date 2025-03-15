@@ -140,35 +140,36 @@ const ImageModal = ({
     };
 
     const left = () => {
-        if (scanLoading) {
-            return
-        }
-        setCurrentIndex(prevIndex => Math.max(prevIndex - 1, 0));
+        if (scanLoading || currentIndex <= 0) return;
+
+        const newIndex = currentIndex - 1;
+        setCurrentIndex(newIndex);
+        modalScroll();
+        dispatch(fetchSingleImage({ imageId: totalImages[newIndex]?.id }));
     };
 
     const right = () => {
-        if (scanLoading) {
-            return
-        }
-        setCurrentIndex(prevIndex => Math.min(prevIndex + 1, totalImages.length - 1));
+        if (scanLoading || currentIndex >= totalImages.length - 1) return;
+
+        const newIndex = currentIndex + 1;
+        setCurrentIndex(newIndex);
+        modalScroll();
+        dispatch(fetchSingleImage({ imageId: totalImages[newIndex]?.id }));
     };
 
 
     useEffect(() => {
-        // Update currentIndex whenever a new item is selected
-        if (selectedImage) {
-            const newIndex = totalImages.findIndex((img) => img.id === selectedImage.id);
-            setCurrentIndex(newIndex);
-        }
+        if (!selectedImage) return;
+        setCurrentIndex(totalImages.findIndex((img) => img.id === selectedImage.id));
     }, [selectedImage, totalImages]);
 
     // Fetch new image when currentIndex changes
-    useEffect(() => {
-        if (currentIndex !== -1) {
-            modalScroll()
-            dispatch(fetchSingleImage({ imageId: totalImages[currentIndex]?.id }));
-        }
-    }, [currentIndex, dispatch, totalImages]);
+    // useEffect(() => {
+    //     if (currentIndex !== -1 && totalImages[currentIndex]?.id !== selectedImage?.id) {
+    //         modalScroll();
+    //         dispatch(fetchSingleImage({ imageId: totalImages[currentIndex]?.id }));
+    //     }
+    // }, [currentIndex, dispatch, totalImages, selectedImage]);
 
     const formattedName = currentUser?.name?.replace(/\s+/g, '-').toLowerCase();
 
@@ -201,7 +202,7 @@ const ImageModal = ({
         modalScroll()
         dispatch(setTotalImages(relatedImages));
         dispatch(setSingleImage(item))
-        dispatch(fetchSingleImage({ imageId: item.id }))
+        dispatch(fetchSingleImage({ imageId: item.id }));
         await increamentViewsCount({ imageId: item.id })
     };
 
@@ -595,7 +596,7 @@ const ImageModal = ({
                     <div className='flex justify-between p-4'>
                         <div className='text-2xl text-[#384261] font-semibold text-center'>Save to Collection</div>
                     </div>
-                    <div className='max-h-[50vh] bg-teal-500/10 overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
+                    <div className='max-h-[50vh] bg-teal-300/10 overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
                         {collections?.map((item: Collection) => (
                             <div key={item.id}>
                                 <CollectionButton

@@ -254,7 +254,7 @@ const SingleimageView = ({
                     <div className='flex justify-between p-4'>
                         <div className='text-2xl text-[#384261] font-semibold text-center'>Save to Collection</div>
                     </div>
-                    <div className='max-h-[50vh] bg-teal-500/10 overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
+                    <div className='max-h-[50vh] bg-teal-300/10 overflow-y-auto space-y-3 p-4' style={{ scrollbarWidth: "thin" }}>
                         {collections?.map((item: Collection) => (
                             <div key={item.id}>
                                 <CollectionButton
